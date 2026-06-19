@@ -59,24 +59,50 @@ The current cross-model visual input profile for full studies is
 clips at 1080px width and 30 fps, with the same derived clips sent to each
 model.
 
-### Canonical Full-Study Runbook
+### Current Benchmark Setup
 
-Run the 20-sample smoke config for a model first. If there are no parse errors,
-run the matching full config.
+The current full benchmark setup is the most recent non-multi-output
+classification run:
+`configs/benchmarks/single_choice_multiclass_full_reasoning512_1080p30fps.json`.
+It uses the `single_choice_multiclass` task rather than the older multi-label
+`failure_mode_classification` prompt.
+
+This setup runs the full `metadata/real_human_samples_no_multiple.json` dataset,
+which removes the three ambiguous `multiple` samples. It compares MiniMax M3,
+Gemini 3.5 Flash, Gemini 3.1 Pro Preview, and Qwen3.6 Plus through OpenRouter.
+Each sample is sent as the canonical all-view `1080px/30fps` video profile, with
+temperature 0, JSON-only local validation, `max_completion_tokens=1400`, and
+`reasoning.max_tokens=512` with hidden reasoning excluded from the visible
+output.
+
+Run the current full benchmark with:
+
+```bash
+python scripts/run_benchmark.py --config configs/benchmarks/single_choice_multiclass_full_reasoning512_1080p30fps.json --run-id single_choice_multiclass_full_reasoning512_1080p30fps_001
+```
+
+The matching 10-sample smoke config is
+`configs/benchmarks/single_choice_multiclass_10_medium_reasoning_1080p30fps.json`.
+Use it before rerunning the full setup when validating prompt or parser changes.
+
+### Legacy Binary and Multi-Output Runbook
+
+For the older binary benchmark suite, run the 20-sample smoke config for a model
+first. If there are no parse errors, run the matching full config.
 
 ```bash
 python scripts/run_benchmark.py --config configs/benchmarks/binary_20_gemini_flash_1080p30fps.json --run-id binary20_gemini_flash_1080p30fps_001
 python scripts/run_benchmark.py --config configs/benchmarks/binary_full_gemini_flash_1080p30fps.json --run-id binary_full_gemini_flash_1080p30fps_001
 ```
 
-The active full binary configs are:
+Legacy full binary configs are:
 
 - `configs/benchmarks/binary_full_gemini_flash_1080p30fps.json`
 - `configs/benchmarks/binary_full_gemini_pro_1080p30fps.json`
 - `configs/benchmarks/binary_full_minimax_1080p30fps.json`
 - `configs/benchmarks/binary_full_qwen_1080p30fps.json`
 
-The active full multiclass configs are:
+Legacy full multi-output multiclass configs are:
 
 - `configs/benchmarks/multiclass_full_gemini_flash_1080p30fps.json`
 - `configs/benchmarks/multiclass_full_gemini_pro_1080p30fps.json`
