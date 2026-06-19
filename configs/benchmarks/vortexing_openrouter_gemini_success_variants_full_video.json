@@ -1,0 +1,45 @@
+{
+  "name": "vortexing_openrouter_gemini_success_variants_full_video",
+  "metadata_path": "metadata/real_human_samples.json",
+  "output_root": "runs",
+  "provider": "openrouter",
+  "models": [
+    "google/gemini-3.1-pro-preview-20260219"
+  ],
+  "tasks": [
+    "binary_success",
+    "failure_mode_classification"
+  ],
+  "sample_filter": {
+    "task_ids": [
+      "closing_cap",
+      "vortexing_after_turning_on_vortexer"
+    ],
+    "include_sample_ids": [
+      "real_human_carrie_00_success_success_cap_close_01",
+      "real_human_carrie_00_success_success_vortex_on_01"
+    ],
+    "exclude_sample_ids": []
+  },
+  "media": {
+    "input_type": "video",
+    "camera_views": [],
+    "max_videos_per_sample": 0,
+    "max_total_video_mb_per_request": 250,
+    "preprocess": {
+      "transcode": {
+        "enabled": false
+      }
+    }
+  },
+  "openrouter": {
+    "api_url": "https://openrouter.ai/api/v1/chat/completions",
+    "api_key_env": "OPENROUTER_API_KEY",
+    "temperature": 0,
+    "max_completion_tokens": 2000,
+    "timeout_seconds": 300,
+    "metadata_enabled": true,
+    "require_structured_output": false
+  }
+}
+

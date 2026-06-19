@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="560" viewBox="0 0 1120 560">
+<style>text{font-family:Arial,sans-serif;fill:#111827}.muted{fill:#6b7280}.grid{stroke:#e5e7eb}.axis{stroke:#374151}.bar-label{font-size:11px}.tick{font-size:12px}.title{font-size:22px;font-weight:700}.legend{font-size:13px}</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="92" y="34" class="title">OpenRouter Cost by Model and Task</text>
+<text x="22" y="252.0" transform="rotate(-90 22 252.0)" class="muted">Cost</text>
+<line x1="92" y1="440.0" x2="1096" y2="440.0" class="grid"/>
+<text x="82" y="444.0" text-anchor="end" class="tick">0%</text>
+<line x1="92" y1="364.8" x2="1096" y2="364.8" class="grid"/>
+<text x="82" y="368.8" text-anchor="end" class="tick">89%</text>
+<line x1="92" y1="289.6" x2="1096" y2="289.6" class="grid"/>
+<text x="82" y="293.6" text-anchor="end" class="tick">179%</text>
+<line x1="92" y1="214.4" x2="1096" y2="214.4" class="grid"/>
+<text x="82" y="218.4" text-anchor="end" class="tick">268%</text>
+<line x1="92" y1="139.2" x2="1096" y2="139.2" class="grid"/>
+<text x="82" y="143.2" text-anchor="end" class="tick">357%</text>
+<line x1="92" y1="64.0" x2="1096" y2="64.0" class="grid"/>
+<text x="82" y="68.0" text-anchor="end" class="tick">446%</text>
+<line x1="92" y1="64" x2="92" y2="440" class="axis"/>
+<line x1="92" y1="440" x2="1096" y2="440" class="axis"/>
+<rect x="102.0" y="357.9" width="116.5" height="82.1" fill="#3b82f6"/>
+<text x="160.2" y="353.9" text-anchor="middle" class="bar-label">97</text>
+<rect x="222.5" y="178.9" width="116.5" height="261.1" fill="#f59e0b"/>
+<text x="280.8" y="174.9" text-anchor="middle" class="bar-label">310</text>
+<rect x="343.0" y="101.9" width="116.5" height="338.1" fill="#10b981"/>
+<text x="401.2" y="97.9" text-anchor="middle" class="bar-label">401</text>
+<rect x="463.5" y="249.2" width="116.5" height="190.8" fill="#ef4444"/>
+<text x="521.8" y="245.2" text-anchor="middle" class="bar-label">227</text>
+<text x="343.0" y="460" text-anchor="end" transform="rotate(-35 343.0 460)" class="tick">Binary</text>
+<rect x="604.0" y="357.3" width="116.5" height="82.7" fill="#3b82f6"/>
+<text x="662.2" y="353.3" text-anchor="middle" class="bar-label">98</text>
+<rect x="724.5" y="146.8" width="116.5" height="293.2" fill="#f59e0b"/>
+<text x="782.8" y="142.8" text-anchor="middle" class="bar-label">348</text>
+<rect x="845.0" y="64.0" width="116.5" height="376.0" fill="#10b981"/>
+<text x="903.2" y="60.0" text-anchor="middle" class="bar-label">446</text>
+<rect x="965.5" y="248.0" width="116.5" height="192.0" fill="#ef4444"/>
+<text x="1023.8" y="244.0" text-anchor="middle" class="bar-label">228</text>
+<text x="845.0" y="460" text-anchor="end" transform="rotate(-35 845.0 460)" class="tick">Multiclass</text>
+<rect x="92" y="520" width="14" height="14" fill="#3b82f6"/>
+<text x="112" y="532" class="legend">MiniMax</text>
+<rect x="242" y="520" width="14" height="14" fill="#f59e0b"/>
+<text x="262" y="532" class="legend">Gemini Flash</text>
+<rect x="392" y="520" width="14" height="14" fill="#10b981"/>
+<text x="412" y="532" class="legend">Gemini Pro</text>
+<rect x="542" y="520" width="14" height="14" fill="#ef4444"/>
+<text x="562" y="532" class="legend">Qwen</text>
+</svg>

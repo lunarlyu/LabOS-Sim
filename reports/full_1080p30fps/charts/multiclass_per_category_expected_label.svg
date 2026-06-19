@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="640" viewBox="0 0 1320 640">
+<style>text{font-family:Arial,sans-serif;fill:#111827}.muted{fill:#6b7280}.grid{stroke:#e5e7eb}.axis{stroke:#374151}.bar-label{font-size:11px}.tick{font-size:12px}.title{font-size:22px;font-weight:700}.legend{font-size:13px}</style>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="92" y="34" class="title">Multiclass Expected Label Included by Ground-Truth Category</text>
+<text x="22" y="292.0" transform="rotate(-90 22 292.0)" class="muted">Score</text>
+<line x1="92" y1="520.0" x2="1296" y2="520.0" class="grid"/>
+<text x="82" y="524.0" text-anchor="end" class="tick">0%</text>
+<line x1="92" y1="428.8" x2="1296" y2="428.8" class="grid"/>
+<text x="82" y="432.8" text-anchor="end" class="tick">20%</text>
+<line x1="92" y1="337.6" x2="1296" y2="337.6" class="grid"/>
+<text x="82" y="341.6" text-anchor="end" class="tick">40%</text>
+<line x1="92" y1="246.4" x2="1296" y2="246.4" class="grid"/>
+<text x="82" y="250.4" text-anchor="end" class="tick">60%</text>
+<line x1="92" y1="155.2" x2="1296" y2="155.2" class="grid"/>
+<text x="82" y="159.2" text-anchor="end" class="tick">80%</text>
+<line x1="92" y1="64.0" x2="1296" y2="64.0" class="grid"/>
+<text x="82" y="68.0" text-anchor="end" class="tick">100%</text>
+<line x1="92" y1="64" x2="92" y2="520" class="axis"/>
+<line x1="92" y1="520" x2="1296" y2="520" class="axis"/>
+<rect x="102.0" y="482.6" width="28.6" height="37.4" fill="#3b82f6"/>
+<text x="116.3" y="478.6" text-anchor="middle" class="bar-label">8</text>
+<rect x="134.6" y="198.6" width="28.6" height="321.4" fill="#f59e0b"/>
+<text x="148.9" y="194.6" text-anchor="middle" class="bar-label">70</text>
+<rect x="167.2" y="191.1" width="28.6" height="328.9" fill="#10b981"/>
+<text x="181.6" y="187.1" text-anchor="middle" class="bar-label">72</text>
+<rect x="199.9" y="93.9" width="28.6" height="426.1" fill="#ef4444"/>
+<text x="214.2" y="89.9" text-anchor="middle" class="bar-label">93</text>
+<text x="167.2" y="540" text-anchor="end" transform="rotate(-35 167.2 540)" class="tick">success</text>
+<rect x="252.5" y="501.0" width="28.6" height="19.0" fill="#3b82f6"/>
+<text x="266.8" y="497.0" text-anchor="middle" class="bar-label">4</text>
+<rect x="285.1" y="282.5" width="28.6" height="237.5" fill="#f59e0b"/>
+<text x="299.4" y="278.5" text-anchor="middle" class="bar-label">52</text>
+<rect x="317.8" y="396.5" width="28.6" height="123.5" fill="#10b981"/>
+<text x="332.1" y="392.5" text-anchor="middle" class="bar-label">27</text>
+<rect x="350.4" y="472.5" width="28.6" height="47.5" fill="#ef4444"/>
+<text x="364.7" y="468.5" text-anchor="middle" class="bar-label">10</text>
+<text x="317.8" y="540" text-anchor="end" transform="rotate(-35 317.8 540)" class="tick">cap_open</text>
+<rect x="403.0" y="235.0" width="28.6" height="285.0" fill="#3b82f6"/>
+<text x="417.3" y="231.0" text-anchor="middle" class="bar-label">62</text>
+<rect x="435.6" y="220.8" width="28.6" height="299.2" fill="#f59e0b"/>
+<text x="449.9" y="216.8" text-anchor="middle" class="bar-label">66</text>
+<rect x="468.2" y="320.5" width="28.6" height="199.5" fill="#10b981"/>
+<text x="482.6" y="316.5" text-anchor="middle" class="bar-label">44</text>
+<rect x="500.9" y="206.5" width="28.6" height="313.5" fill="#ef4444"/>
+<text x="515.2" y="202.5" text-anchor="middle" class="bar-label">69</text>
+<text x="468.2" y="540" text-anchor="end" transform="rotate(-35 468.2 540)" class="tick">tube_drop</text>
+<rect x="553.5" y="520.0" width="28.6" height="0.0" fill="#3b82f6"/>
+<text x="567.8" y="516.0" text-anchor="middle" class="bar-label">0</text>
+<rect x="586.1" y="520.0" width="28.6" height="0.0" fill="#f59e0b"/>
+<text x="600.4" y="516.0" text-anchor="middle" class="bar-label">0</text>
+<rect x="618.8" y="437.1" width="28.6" height="82.9" fill="#10b981"/>
+<text x="633.1" y="433.1" text-anchor="middle" class="bar-label">18</text>
+<rect x="651.4" y="520.0" width="28.6" height="0.0" fill="#ef4444"/>
+<text x="665.7" y="516.0" text-anchor="middle" class="bar-label">0</text>
+<text x="618.8" y="540" text-anchor="end" transform="rotate(-35 618.8 540)" class="tick">tube_empty</text>
+<rect x="704.0" y="97.8" width="28.6" height="422.2" fill="#3b82f6"/>
+<text x="718.3" y="93.8" text-anchor="middle" class="bar-label">93</text>
+<rect x="736.6" y="469.3" width="28.6" height="50.7" fill="#f59e0b"/>
+<text x="750.9" y="465.3" text-anchor="middle" class="bar-label">11</text>
+<rect x="769.2" y="452.4" width="28.6" height="67.6" fill="#10b981"/>
+<text x="783.6" y="448.4" text-anchor="middle" class="bar-label">15</text>
+<rect x="801.9" y="503.1" width="28.6" height="16.9" fill="#ef4444"/>
+<text x="816.2" y="499.1" text-anchor="middle" class="bar-label">4</text>
+<text x="769.2" y="540" text-anchor="end" transform="rotate(-35 769.2 540)" class="tick">vortex_off</text>
+<rect x="854.5" y="520.0" width="28.6" height="0.0" fill="#3b82f6"/>
+<text x="868.8" y="516.0" text-anchor="middle" class="bar-label">0</text>
+<rect x="887.1" y="482.0" width="28.6" height="38.0" fill="#f59e0b"/>
+<text x="901.4" y="478.0" text-anchor="middle" class="bar-label">8</text>
+<rect x="919.8" y="482.0" width="28.6" height="38.0" fill="#10b981"/>
+<text x="934.1" y="478.0" text-anchor="middle" class="bar-label">8</text>
+<rect x="952.4" y="520.0" width="28.6" height="0.0" fill="#ef4444"/>
+<text x="966.7" y="516.0" text-anchor="middle" class="bar-label">0</text>
+<text x="919.8" y="540" text-anchor="end" transform="rotate(-35 919.8 540)" class="tick">wrong_orientation</text>
+<rect x="1005.0" y="520.0" width="28.6" height="0.0" fill="#3b82f6"/>
+<text x="1019.3" y="516.0" text-anchor="middle" class="bar-label">0</text>
+<rect x="1037.6" y="491.5" width="28.6" height="28.5" fill="#f59e0b"/>
+<text x="1051.9" y="487.5" text-anchor="middle" class="bar-label">6</text>
+<rect x="1070.2" y="306.2" width="28.6" height="213.8" fill="#10b981"/>
+<text x="1084.6" y="302.2" text-anchor="middle" class="bar-label">47</text>
+<rect x="1102.9" y="491.5" width="28.6" height="28.5" fill="#ef4444"/>
+<text x="1117.2" y="487.5" text-anchor="middle" class="bar-label">6</text>
+<text x="1070.2" y="540" text-anchor="end" transform="rotate(-35 1070.2 540)" class="tick">wrong_rack</text>
+<rect x="1155.5" y="520.0" width="28.6" height="0.0" fill="#3b82f6"/>
+<text x="1169.8" y="516.0" text-anchor="middle" class="bar-label">0</text>
+<rect x="1188.1" y="437.1" width="28.6" height="82.9" fill="#f59e0b"/>
+<text x="1202.4" y="433.1" text-anchor="middle" class="bar-label">18</text>
+<rect x="1220.8" y="450.9" width="28.6" height="69.1" fill="#10b981"/>
+<text x="1235.1" y="446.9" text-anchor="middle" class="bar-label">15</text>
+<rect x="1253.4" y="520.0" width="28.6" height="0.0" fill="#ef4444"/>
+<text x="1267.7" y="516.0" text-anchor="middle" class="bar-label">0</text>
+<text x="1220.8" y="540" text-anchor="end" transform="rotate(-35 1220.8 540)" class="tick">rack_flipped</text>
+<rect x="92" y="600" width="14" height="14" fill="#3b82f6"/>
+<text x="112" y="612" class="legend">MiniMax</text>
+<rect x="242" y="600" width="14" height="14" fill="#f59e0b"/>
+<text x="262" y="612" class="legend">Gemini Flash</text>
+<rect x="392" y="600" width="14" height="14" fill="#10b981"/>
+<text x="412" y="612" class="legend">Gemini Pro</text>
+<rect x="542" y="600" width="14" height="14" fill="#ef4444"/>
+<text x="562" y="612" class="legend">Qwen</text>
+</svg>

@@ -1,0 +1,14 @@
+Take a look at the original document with the figures please. Gather all of the images on screen. I want you to fillow the instructiosn below on whether or not we should replot or re-draw the figures. Output all of the figures in sequence with a tag on what you should do with them based on my instructions below.
+
+Autoscreen Replot 
+Fig 1a left + middle replot, right delete
+Fig 1b delete
+Fig 1c pause
+Fig 1d replot
+Fig 2a change the 396 to 348
+Fig 3a+ f replot
+Fig 3 b, c, d, e, g, h, I pause 
+Fig 4 pause 
+
+Once you have done this I will ask you to perform some modifications 
+Fig 5 pause

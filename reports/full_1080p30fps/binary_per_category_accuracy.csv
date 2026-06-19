@@ -1,0 +1,33 @@
+model,category,n,accuracy,correct
+MiniMax,success,61,0.0,0
+MiniMax,cap_open,48,0.9375,45
+MiniMax,tube_drop,32,1.0,32
+MiniMax,tube_empty,11,1.0,11
+MiniMax,vortex_off,27,1.0,27
+MiniMax,wrong_orientation,12,1.0,12
+MiniMax,wrong_rack,32,0.9375,30
+MiniMax,rack_flipped,33,0.9696969696969697,32
+Gemini Flash,success,61,0.819672131147541,50
+Gemini Flash,cap_open,48,0.4583333333333333,22
+Gemini Flash,tube_drop,32,0.90625,29
+Gemini Flash,tube_empty,11,0.45454545454545453,5
+Gemini Flash,vortex_off,27,0.1111111111111111,3
+Gemini Flash,wrong_orientation,12,0.16666666666666666,2
+Gemini Flash,wrong_rack,32,0.15625,5
+Gemini Flash,rack_flipped,33,0.7272727272727273,24
+Gemini Pro,success,61,0.7868852459016393,48
+Gemini Pro,cap_open,48,0.5833333333333334,28
+Gemini Pro,tube_drop,32,0.78125,25
+Gemini Pro,tube_empty,11,0.36363636363636365,4
+Gemini Pro,vortex_off,27,0.07407407407407407,2
+Gemini Pro,wrong_orientation,12,0.3333333333333333,4
+Gemini Pro,wrong_rack,32,0.46875,15
+Gemini Pro,rack_flipped,33,0.7272727272727273,24
+Qwen,success,61,0.9344262295081968,57
+Qwen,cap_open,48,0.3125,15
+Qwen,tube_drop,32,0.84375,27
+Qwen,tube_empty,11,0.09090909090909091,1
+Qwen,vortex_off,27,0.1111111111111111,3
+Qwen,wrong_orientation,12,0.5,6
+Qwen,wrong_rack,32,0.1875,6
+Qwen,rack_flipped,33,0.7272727272727273,24

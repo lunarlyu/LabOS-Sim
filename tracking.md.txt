@@ -1,0 +1,13 @@
+Different forms of eval
+
+High level forms of detection tasks
+* binary
+* multimodal
+* generative?
+* restrict output tokens or not
+* thinking vs non thinking
+
+
+Axes of detection
+* Angle of video
+* description of error

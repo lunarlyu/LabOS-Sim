@@ -1,0 +1,5 @@
+model,model_id,n,completed,parse_errors_after_retries,parser_recovered_rows,exact_choice_accuracy,outcome_accuracy,avg_confidence_completed,cost,prompt_tokens,video_tokens,completion_tokens,reasoning_tokens,visible_completion_tokens_est
+MiniMax,minimax/minimax-m3,10,9,1,2,0.1,0.2,0.8733333333333333,0.06940816799999999,225106,0,8686,8428,516
+Gemini Flash,google/gemini-3.5-flash,10,10,0,0,0.5,0.7,0.96,0.095196,35960,27000,4584,3656,928
+Gemini Pro,google/gemini-3.1-pro-preview-20260219,10,10,0,0,0.4,0.7,0.95,0.12564399999999998,35966,27000,4476,3623,853
+Qwen,qwen/qwen3.6-plus,10,10,0,0,0.3,0.5,0.945,0.10425285,284610,0,6028,5120,908

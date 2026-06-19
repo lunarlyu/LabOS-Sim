@@ -1,0 +1,5 @@
+huggingface_hub>=0.23
+datasets>=2.20
+requests>=2.32
+imageio-ffmpeg>=0.6
+

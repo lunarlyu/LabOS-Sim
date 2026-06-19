@@ -1,0 +1,67 @@
+{
+  "name": "binary_20_minimax_1080p30fps",
+  "metadata_path": "metadata/real_human_samples.json",
+  "output_root": "runs",
+  "provider": "openrouter",
+  "models": [
+    "minimax/minimax-m3"
+  ],
+  "tasks": [
+    "binary_success"
+  ],
+  "sample_filter": {
+    "task_ids": [],
+    "include_sample_ids": [
+      "real_human_carrie_00_success_success_01_clean",
+      "real_human_carrie_00_success_success_02_clean",
+      "real_human_carrie_00_success_success_03_clean",
+      "real_human_carrie_00_success_success_04_clean",
+      "real_human_carrie_00_success_success_05_clean",
+      "real_human_carrie_01_cap_open_fail_cap_loose_01",
+      "real_human_carrie_01_cap_open_fail_cap_loose_02",
+      "real_human_carrie_02_tube_drop_fail_tube_drop_01",
+      "real_human_carrie_02_tube_drop_fail_tube_drop_02",
+      "real_human_carrie_03_tube_empty_fail_tube_empty_01",
+      "real_human_carrie_03_tube_empty_fail_tube_empty_02",
+      "real_human_carrie_04_vortex_off_fail_vortex_off_01",
+      "real_human_carrie_04_vortex_off_fail_vortex_off_02",
+      "real_human_carrie_05_wrong_orientation_fail_wrong_orientation_01",
+      "real_human_carrie_05_wrong_orientation_fail_wrong_orientation_02",
+      "real_human_carrie_06_wrong_rack_fail_wrong_rack_01",
+      "real_human_carrie_06_wrong_rack_fail_wrong_rack_02",
+      "real_human_carrie_07_rack_flipped_fail_rack_flipped_01",
+      "real_human_carrie_07_rack_flipped_fail_rack_flipped_02",
+      "real_human_carrie_00_success_success_correct_rack_01"
+    ],
+    "exclude_sample_ids": []
+  },
+  "media": {
+    "input_type": "video",
+    "fairness_profile": "canonical_clip_1080px_30fps",
+    "camera_views": [],
+    "max_videos_per_sample": 0,
+    "max_total_video_mb_per_request": 250,
+    "preprocess": {
+      "transcode": {
+        "enabled": true,
+        "max_width": 1080,
+        "fps": 30,
+        "crf": 28,
+        "preset": "veryfast"
+      }
+    }
+  },
+  "openrouter": {
+    "api_url": "https://openrouter.ai/api/v1/chat/completions",
+    "api_key_env": "OPENROUTER_API_KEY",
+    "temperature": 0,
+    "max_completion_tokens": 700,
+    "timeout_seconds": 180,
+    "metadata_enabled": true,
+    "require_structured_output": false,
+    "reasoning": {
+      "effort": "none",
+      "exclude": true
+    }
+  }
+}
