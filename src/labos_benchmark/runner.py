@@ -157,10 +157,15 @@ def build_payload(
     encode_media: bool = True,
 ) -> dict[str, Any]:
     openrouter_config = config["openrouter"]
+    media_config = config.get("media", {})
     payload = {
         "model": model,
-        "messages": build_messages(load_prompt(task_name), videos, encode_media=encode_media),
-        "temperature": openrouter_config.get("temperature", 0),
+        "messages": build_messages(
+            load_prompt(task_name),
+            videos,
+            encode_media=encode_media,
+            media_input_type=media_config.get("input_type", "video"),
+        ),
         "max_completion_tokens": openrouter_config.get("max_completion_tokens", 700),
         "stream": False,
         "metadata": {
@@ -169,6 +174,8 @@ def build_payload(
             "sample_id": sample.sample_id,
         },
     }
+    if "temperature" in openrouter_config and openrouter_config["temperature"] is not None:
+        payload["temperature"] = openrouter_config["temperature"]
     if "reasoning" in openrouter_config:
         payload["reasoning"] = openrouter_config["reasoning"]
     if openrouter_config.get("require_structured_output", True):

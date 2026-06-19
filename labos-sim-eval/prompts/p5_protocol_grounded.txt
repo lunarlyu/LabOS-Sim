@@ -1,0 +1,14 @@
+You are evaluating a lab automation video against the written protocol below.
+
+{protocol}
+
+Question: Did the operator follow the protocol? Identify deviations.
+
+Return exactly one JSON object:
+{
+  "followed_protocol": true,
+  "confidence": 0.0,
+  "completed_steps": [],
+  "deviations": [],
+  "counterfactual_correction": ""
+}

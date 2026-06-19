@@ -1,0 +1,11 @@
+You are evaluating a lab automation video.
+
+Question: Describe what happened and identify any deviation from correct
+execution.
+
+Return exactly one JSON object:
+{
+  "summary": "Brief chronological description.",
+  "deviations": [],
+  "confidence": 0.0
+}

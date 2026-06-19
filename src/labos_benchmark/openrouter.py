@@ -47,29 +47,43 @@ def build_response_format(task_name: str) -> dict[str, Any]:
 
 def build_messages(
     prompt_text: str,
-    videos: list[dict[str, Any]],
+    media_items: list[dict[str, Any]],
     *,
     encode_media: bool = True,
+    media_input_type: str = "video",
 ) -> list[dict[str, Any]]:
     content: list[dict[str, Any]] = [{"type": "text", "text": prompt_text}]
-    for index, video in enumerate(videos, start=1):
+    for index, media in enumerate(media_items, start=1):
+        item_label = "Contact sheet" if media_input_type == "image_contact_sheet" else "Video"
         content.append(
             {
                 "type": "text",
                 "text": (
-                    f"Video {index}: file_name={video['file_name']}, "
-                    f"camera_view={video['camera_view']}, "
-                    f"camera_device={video.get('camera_device') or 'unknown'}."
+                    f"{item_label} {index}: file_name={media['file_name']}, "
+                    f"camera_view={media['camera_view']}, "
+                    f"camera_device={media.get('camera_device') or 'unknown'}."
                 ),
             }
         )
+        if media_input_type == "image_contact_sheet":
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": data_url(media["path"])
+                        if encode_media
+                        else f"data:image/jpeg;base64,<dry-run: {media['path']}>",
+                    },
+                }
+            )
+            continue
         content.append(
             {
                 "type": "video_url",
                 "video_url": {
-                    "url": data_url(video["path"])
+                    "url": data_url(media["path"])
                     if encode_media
-                    else f"data:video/mp4;base64,<dry-run: {video['path']}>",
+                    else f"data:video/mp4;base64,<dry-run: {media['path']}>",
                 },
             }
         )
@@ -92,12 +106,18 @@ def redact_payload(payload: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(content, list):
             continue
         for item in content:
-            if item.get("type") == "video_url":
-                video_url = item.get("video_url") or item.get("videoUrl", {})
-                url = video_url.get("url", "")
+            if item.get("type") in {"video_url", "image_url"}:
+                media_url = (
+                    item.get("video_url")
+                    or item.get("videoUrl")
+                    or item.get("image_url")
+                    or item.get("imageUrl")
+                    or {}
+                )
+                url = media_url.get("url", "")
                 if url.startswith("data:"):
                     prefix, _, encoded = url.partition(",")
-                    video_url["url"] = f"{prefix},<base64 redacted: {len(encoded)} chars>"
+                    media_url["url"] = f"{prefix},<base64 redacted: {len(encoded)} chars>"
     return redacted
 
 

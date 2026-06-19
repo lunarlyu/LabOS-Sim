@@ -1,0 +1,7 @@
+Protocol: Vortexing a Tube
+
+1. Pick up a capped, non-empty tube.
+2. Place the tube onto the vortexer.
+3. Run the vortexer until visible liquid movement, spinning, or agitation occurs.
+4. Remove the tube from the vortexer.
+5. Place the tube into a suitable tube rack or holder that can hold it upright.

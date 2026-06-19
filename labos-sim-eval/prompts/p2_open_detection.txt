@@ -1,0 +1,14 @@
+You are evaluating a lab automation video.
+
+Question: Was there any error in this video?
+
+Use the correct vortexing protocol as the reference. Report whether any visible
+deviation occurred.
+
+Return exactly one JSON object:
+{
+  "error_present": false,
+  "confidence": 0.0,
+  "observed_error": "",
+  "reasoning": "Brief visual evidence."
+}

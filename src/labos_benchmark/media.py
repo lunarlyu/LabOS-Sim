@@ -49,11 +49,75 @@ def transcode_video(
     return output_path
 
 
+def create_contact_sheet(
+    input_path: Path,
+    output_path: Path,
+    *,
+    max_width: int,
+    fps: float,
+    columns: int,
+    rows: int,
+    quality: int,
+) -> Path:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+    command = [
+        ffmpeg,
+        "-y",
+        "-i",
+        str(input_path),
+        "-vf",
+        f"fps={fps},scale={max_width}:-2,tile={columns}x{rows}",
+        "-frames:v",
+        "1",
+        "-q:v",
+        str(quality),
+        str(output_path),
+    ]
+    subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return output_path
+
+
 def maybe_transcode_videos(
     videos: list[dict[str, Any]],
     output_dir: Path,
     media_config: dict[str, Any],
 ) -> list[dict[str, Any]]:
+    if media_config.get("input_type") == "image_contact_sheet":
+        sheet_config = media_config.get("preprocess", {}).get("contact_sheet", {})
+        processed: list[dict[str, Any]] = []
+        for video in videos:
+            source_path = Path(video["path"])
+            output_path = output_dir / f"{source_path.stem}.contact_sheet.jpg"
+            create_contact_sheet(
+                source_path,
+                output_path,
+                max_width=int(sheet_config.get("max_width", 720)),
+                fps=float(sheet_config.get("fps", 1)),
+                columns=int(sheet_config.get("columns", 4)),
+                rows=int(sheet_config.get("rows", 8)),
+                quality=int(sheet_config.get("quality", 3)),
+            )
+            processed.append(
+                {
+                    **video,
+                    "source_path": source_path,
+                    "path": output_path,
+                    "bytes": output_path.stat().st_size,
+                    "sha256": file_sha256(output_path),
+                    "api_media": {
+                        "preprocessed": True,
+                        "source_path": str(source_path),
+                        "source_sha256": file_sha256(source_path),
+                        "api_sha256": file_sha256(output_path),
+                        "delivery": "base64_image_url",
+                        "fairness_profile": media_config.get("fairness_profile"),
+                        "contact_sheet": sheet_config,
+                    },
+                }
+            )
+        return processed
+
     transcode_config = media_config.get("preprocess", {}).get("transcode", {})
     if not transcode_config.get("enabled", False):
         return videos

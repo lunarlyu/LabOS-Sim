@@ -1,0 +1,17 @@
+You are evaluating a lab automation video.
+
+Question: Was this vortexing task performed correctly? Answer yes or no.
+
+Correct execution:
+1. Pick up a capped, non-empty tube.
+2. Place the tube on the vortexer.
+3. Run the vortexer until visible liquid movement/spinning/agitation occurs.
+4. Remove the tube from the vortexer.
+5. Place the tube into a suitable tube rack or holder.
+
+Return exactly one JSON object:
+{
+  "performed_correctly": true,
+  "confidence": 0.0,
+  "reasoning": "Brief visual evidence."
+}

@@ -1,0 +1,7 @@
+Rubric for free-form and protocol-grounded evaluation:
+
+- Mention the tube state: capped/uncapped and empty/non-empty when visible.
+- Mention whether the vortexer visibly ran.
+- Mention whether the tube was returned to a suitable rack or holder.
+- Identify concrete deviations rather than vague failure language.
+- Do not infer hidden state when visual evidence is absent.

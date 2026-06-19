@@ -1,0 +1,155 @@
+# LabOS-Sim Eval configuration.
+# Pattern: GTG2Vid-style central config, simplified for VLM evaluation.
+
+run:
+  name: single_choice_model_suite_smoke
+  seed: 0
+  output_dir: results
+  dry_run: true
+
+dataset:
+  metadata_path: ../metadata/real_human_samples_no_multiple.json
+  data_root: ../data/real_human
+  split_path: null
+  split_name: smoke
+  max_samples: 10
+  exclude_condition_folders:
+    - multiple
+
+media:
+  # This is the canonical evidence policy. Adapters may translate this into
+  # provider-specific transport, but they should not change what evidence is
+  # available without recording it in the config snapshot.
+  policy: native_video_1080p30
+  input_mode: image_contact_sheet
+  camera_views: []          # [] means all views
+  max_videos_per_sample: 0  # 0 means all videos
+  contact_sheet:
+    max_width: 720
+    fps: 1
+    columns: 4
+    rows: 8
+    quality: 3
+  video:
+    max_width: 1080
+    fps: 30
+    crf: 28
+    preset: veryfast
+
+prompts:
+  root: prompts
+  active:
+    - p1_closed_binary
+    - p2_open_detection
+    - p3_multiclass
+    - p4_freeform
+    - p5_protocol_grounded
+  protocol_file: vortex_protocol.txt
+  rubric_file: rubric_p4_p5.txt
+
+models:
+  # Vendor defaults are intentional unless explicitly documented otherwise.
+  - name: gemini_3_1_pro
+    adapter: gemini
+    model_id: gemini-3.1-pro
+    provider_model_id: google/gemini-3.1-pro-preview
+    api_style: google_genai
+    api_key_env: GOOGLE_API_KEY
+    input_mode: video
+    temperature: 0
+    reasoning: vendor_default
+    fps: 30
+
+  - name: gpt_5_5
+    adapter: gpt55
+    model_id: gpt-5.5-2026-04-23
+    provider_model_id: openai/gpt-5.5
+    base_url_env: OPENROUTER_BASE_URL
+    api_key_env: OPENROUTER_API_KEY
+    media_transport: data_uri
+    input_mode: video
+    temperature: null
+    reasoning: vendor_default
+
+  - name: claude_opus_4_8
+    adapter: claude_opus
+    model_id: claude-opus-4-8
+    provider_model_id: anthropic/claude-opus-4.8
+    base_url_env: OPENROUTER_BASE_URL
+    api_key_env: OPENROUTER_API_KEY
+    media_transport: data_uri
+    input_mode: video
+    temperature: 0
+    reasoning: vendor_default
+
+  - name: qwen3_vl
+    adapter: qwen3vl
+    model_id: qwen3-vl-8b-instruct
+    provider_model_id: qwen/qwen3-vl-8b-instruct
+    base_url_env: OPENROUTER_BASE_URL
+    api_key_env: OPENROUTER_API_KEY
+    media_transport: data_uri
+    input_mode: video
+    temperature: 0
+    reasoning: vendor_default
+
+  - name: cosmos3_reasoner_nano_local
+    adapter: cosmos_reason
+    model_id: nvidia/cosmos3-nano-reasoner
+    provider_model_id: nvidia/cosmos3-nano-reasoner
+    base_url: http://127.0.0.1:8000/v1
+    api_key_default: not-used
+    media_transport: file_uri
+    input_mode: video
+    temperature: 0.6
+    top_p: 0.95
+    max_tokens: 1024
+    reasoning: on
+    extra_body:
+      extra_body:
+        media_io_kwargs:
+          video:
+            fps: 4.0
+    enabled: false
+
+  - name: cosmos3_reasoner_super_local
+    adapter: cosmos_reason
+    model_id: nvidia/cosmos3-super-reasoner
+    provider_model_id: nvidia/cosmos3-super-reasoner
+    base_url: http://127.0.0.1:8000/v1
+    api_key_default: not-used
+    media_transport: file_uri
+    input_mode: video
+    temperature: 0.6
+    top_p: 0.95
+    max_tokens: 1024
+    reasoning: on
+    extra_body:
+      extra_body:
+        media_io_kwargs:
+          video:
+            fps: 4.0
+    enabled: false
+
+evaluation:
+  labels:
+    - success
+    - cap_open
+    - tube_drop
+    - tube_empty
+    - vortex_off
+    - wrong_orientation
+    - wrong_rack
+    - rack_flipped
+    - repeated_steps
+    - other_failure
+  metrics:
+    - accuracy
+    - balanced_accuracy
+    - per_category_recall
+    - macro_f1
+    - bootstrap_ci
+  bootstrap:
+    enabled: true
+    n_resamples: 1000
+    confidence_level: 0.95
