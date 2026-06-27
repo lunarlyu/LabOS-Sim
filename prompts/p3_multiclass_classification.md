@@ -1,3 +1,10 @@
+<!--
+DEPRECATED (2026-06-26): superseded by p3_multilabel_classification.md.
+This single-choice version forces mutually-exclusive subtype flags, which breaks
+M2's conditional-independence assumption and cannot record co-occurring errors.
+Kept for reference / reproducibility only. Use the multilabel prompt for new runs.
+-->
+
 You are evaluating a lab automation video.
 
 Question: Which single outcome or error subtype best describes this video?

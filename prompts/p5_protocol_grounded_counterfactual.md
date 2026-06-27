@@ -1,3 +1,9 @@
+<!--
+DEPRECATED (2026-06-26): superseded by p5_protocol_grounded_description.md, which
+merges p4 + p5 for the middle level. The counterfactual_correction field was
+dropped as out-of-scope for detection. Kept for reference only.
+-->
+
 You are evaluating a lab automation video against a written protocol.
 
 Protocol:

@@ -1,3 +1,9 @@
+<!--
+DEPRECATED (2026-06-26): merged into p5_protocol_grounded_description.md.
+p4 (free-form description) and the former p5 (protocol-grounded) overlapped;
+they are now a single middle-level prompt. Use p5_protocol_grounded_description.md.
+-->
+
 You are evaluating a lab automation video.
 
 Question: Describe what happened, including any deviation from correct

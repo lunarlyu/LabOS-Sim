@@ -1,6 +1,6 @@
 You are evaluating a lab automation video.
 
-Question: Was this vortexing task performed correctly? Answer yes or no.
+Question: Was this vortexing task performed correctly? Answer success or failure.
 
 A correct execution has all of these properties:
 
@@ -14,10 +14,14 @@ A correct execution has all of these properties:
 - The tube has a cap on it.
 - The rack or holder can actually hold the tube.
 
+Set `outcome` to `success` only if every property holds; otherwise `failure`.
+`failure_modes` is always empty for this prompt (it does not classify subtypes).
+
 Return exactly one JSON object:
 
 {
-  "performed_correctly": true,
+  "outcome": "success",
+  "failure_modes": [],
   "confidence": 0.0,
   "reasoning": "Brief visual evidence."
 }
