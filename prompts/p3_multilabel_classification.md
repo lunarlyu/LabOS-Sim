@@ -1,8 +1,6 @@
 You are evaluating a lab automation video.
 
-Question: Identify ALL outcomes and errors in this video. First decide whether
-the task was performed correctly. If not, report EVERY failure subtype you
-observe — not just one.
+Question: Identify ALL outcomes and errors in this video. First decide whether the task was performed correctly. If not, report EVERY failure subtype you observe — not just one.
 
 Use the correct vortexing protocol as the reference: pick up a capped, non-empty
 tube; place it on the vortexer; visibly vortex/agitate the liquid; remove the
@@ -29,15 +27,12 @@ Allowed failure subtypes:
 
 Instructions:
 
-- Set `outcome` to `success` ONLY if the full protocol was completed with no
-  deviation. Otherwise set it to `failure`.
+- Set `outcome` to `success` ONLY if the full protocol was completed with no deviation. Otherwise set it to `failure`.
 - Evaluate each failure subtype independently: include a subtype in
   `failure_modes` if and only if you observe it, regardless of whether other
-  subtypes are also present. Multiple subtypes can and should co-occur when more
-  than one thing went wrong.
+  subtypes are also present. Multiple subtypes can and should co-occur when more than one thing went wrong.
 - `failure_modes` must be empty if and only if `outcome` is `success`.
-- Order `failure_modes` by importance: list the single most important / most
-  severe issue to fix FIRST.
+- Order `failure_modes` by importance: list the single most important / most severe issue to fix FIRST.
 
 Return exactly one JSON object:
 
