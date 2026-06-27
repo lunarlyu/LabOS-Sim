@@ -47,13 +47,15 @@ SDT-IRT models (M1/M2):
 | P5 | Protocol-grounded Description | Middle | Describe; did the operator follow the protocol? List deviations. | Freeform → P6 | `p5_protocol_grounded_description.md` | not wired yet |
 | P6 | Free-text → Subtype Parser | (infra) | Map free text to the standardized schema. | Schema + diagnostics | `p6_freetext_subtype_parser.md` | parser stage |
 
-## Deprecated prompts
+## Removed prompts
 
-- `p3_multiclass_classification.md` — single-choice; superseded by
-  `p3_multilabel_classification.md` (single-choice forces mutually-exclusive
-  flags, breaking M2's conditional independence and blocking multi-error clips).
-- `p4_free_form_description.md` — merged into `p5_protocol_grounded_description.md`.
-- `p5_protocol_grounded_counterfactual.md` — superseded by
+These files were deleted (2026-06-26) and substituted by the refined versions:
+
+- `p3_multiclass_classification.md` → replaced by `p3_multilabel_classification.md`
+  (single-choice forced mutually-exclusive flags, breaking M2's conditional
+  independence and blocking multi-error clips).
+- `p4_free_form_description.md` → merged into `p5_protocol_grounded_description.md`.
+- `p5_protocol_grounded_counterfactual.md` → merged into
   `p5_protocol_grounded_description.md` (counterfactual field dropped as
   out-of-scope for detection).
 
