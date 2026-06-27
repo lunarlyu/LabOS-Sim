@@ -2,19 +2,22 @@ You are evaluating a lab automation video.
 
 Question: Was this vortexing task performed correctly? Answer success or failure.
 
-A correct execution has all of these properties:
+Focus only on the single target tube that is picked up and vortexed. Other tubes in the scene are irrelevant: ignore their state (e.g. another tube being
+uncapped or empty is NOT a failure).
 
-- A tube is picked up.
-- The tube is placed onto a vortexer.
-- The vortexer runs, meaning visible movement, spinning, or agitation of the liquid contents is observed.
-- The tube is taken off the vortexer.
-- The tube is placed into a tube holder or test tube rack.
-- The tube is non-empty.
-- The vortexed tube can be any tube in the scene.
-- The tube has a cap on it.
-- The rack or holder can actually hold the tube.
+Correct vortexing protocol (evaluate only the single target tube being vortexed):
 
-Set `outcome` to `success` only if every property holds; otherwise `failure`.
+1. Pick up a capped, non-empty tube.
+2. Place the tube onto the vortexer.
+3. Run the vortexer until visible liquid movement, spinning, or agitation occurs.
+4. Remove the tube from the vortexer.
+5. Place the tube into a suitable tube rack or holder that can hold it upright.
+
+(The target tube can be any tube in the scene; whichever tube is vortexed is the
+one you evaluate.)
+
+Set `outcome` to `success` only if every step of the protocol is completed for
+the target tube; otherwise `failure`.
 `failure_modes` is always empty for this prompt (it does not classify subtypes).
 
 Return exactly one JSON object:
