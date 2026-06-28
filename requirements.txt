@@ -1,0 +1,15 @@
+# Core engine
+pyyaml>=6.0
+requests>=2.31
+openai>=1.40          # used by openai_compatible / gemini adapters
+pandas>=2.0
+numpy>=1.24
+
+# Data ingestion (scripts/data_ingestion/download_real_human.py)
+huggingface_hub>=0.23
+
+# Analysis (results_rendering/fit_sdt_irt.py)
+pymc>=5.10
+arviz>=0.17
+
+# Media handling (media.py uses ffmpeg via subprocess; install ffmpeg separately)
