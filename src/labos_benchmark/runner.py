@@ -18,9 +18,10 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Iterable
 
 from . import client as _client
 from . import prompts as _prompts
@@ -60,6 +61,19 @@ def _new_run_dir(task: str, *parts: str, runs_root: str | Path = "runs") -> Path
     return d
 
 
+def _run_pool(fn: Callable, items: Iterable, concurrency: int) -> None:
+    """Map fn over items, optionally in parallel (API calls are I/O-bound)."""
+    items = list(items)
+    if concurrency and concurrency > 1:
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=concurrency) as ex:
+            list(ex.map(fn, items))
+    else:
+        for it in items:
+            fn(it)
+
+
 # --------------------------------------------------------------------------- #
 # VLM collection (p1 / p2 / p3)
 # --------------------------------------------------------------------------- #
@@ -69,8 +83,16 @@ def collect(
     config: dict,
     *,
     limit: int | None = None,
+    camera_views: list[str] | None = None,
+    concurrency: int = 1,
     runs_root: str | Path = "runs",
 ) -> Path:
+    """Collect one VLM's answers for a task: for each clip, one call with its angles.
+
+    A "sample" is one clip; ``select_videos`` returns its (up to 5) camera-angle
+    videos, which are sent together in a single request -> one answer per clip.
+    Clips are processed with a thread pool of size ``concurrency``.
+    """
     from .dataset import filter_samples, load_samples, select_videos
     from .media import maybe_transcode_videos
 
@@ -84,10 +106,10 @@ def collect(
     defaults = config["defaults"]
     media_cfg = defaults.get("media", {})
     call_cfg = defaults.get("call", {})
+    cams = camera_views if camera_views is not None else media_cfg.get("camera_views", [])
 
     prompt_text = _prompts.load_prompt(task)  # protocol is baked into the .md
-    # parse_fn: structured tasks → JSON; open_detection is freeform but still JSON-shaped
-    parse_fn = _client.parse_first_json
+    parse_fn = _client.parse_first_json       # JSON for all tasks (p2 is still JSON-shaped)
 
     meta_path = Path(defaults["dataset"]["metadata_path"])
     samples = filter_samples(load_samples(meta_path), None)
@@ -98,23 +120,26 @@ def collect(
     run_dir = _new_run_dir(task, model_name, runs_root=runs_root)
     atomic_write_json(run_dir / "run_config.json",
                       {"task": task, "model": model_name, "model_cfg": model_cfg,
-                       "defaults": defaults})
+                       "camera_views": cams, "concurrency": concurrency, "defaults": defaults})
 
-    for sample in samples:
-        videos = select_videos(sample, dataset_root, media_cfg.get("camera_views", []),
+    write_lock = threading.Lock()
+
+    def _process(sample) -> None:
+        videos = select_videos(sample, dataset_root, cams,
                                int(media_cfg.get("max_videos_per_sample", 0)))
         videos = maybe_transcode_videos(videos, run_dir / "media_cache" / sample.sample_id, media_cfg)
         media = [{"type": "video", "path": str(v["path"])} for v in videos]  # TODO: contact-sheet mode
-
         result, ar = _client.call_with_retries(
             adapter, prompt=prompt_text, media=media,
             request_metadata={"task": task, "model": model_name, "sample_id": sample.sample_id},
             model_name=model_name, cost_entry=cost_entry,
             max_retries=int(call_cfg.get("max_retries", 5)), parse_fn=parse_fn,
         )
-        _write_record(run_dir, task, model_name, sample.sample_id, result, ar)
+        with write_lock:
+            _write_record(run_dir, task, model_name, sample.sample_id, result, ar)
 
-    print(f"[done] {task} / {model_name}: wrote {run_dir}")
+    _run_pool(_process, samples, concurrency)
+    print(f"[done] {task} / {model_name}: {len(samples)} clips -> {run_dir}")
     return run_dir
 
 
@@ -127,6 +152,7 @@ def run_parser(
     p2_run_dir: str | Path,
     config: dict,
     *,
+    concurrency: int = 1,
     runs_root: str | Path = "runs",
 ) -> Path:
     """Fill the p6 prompt from each p2 prediction and call a text LLM."""
@@ -146,10 +172,11 @@ def run_parser(
                       {"task": task, "vlm": vlm_name, "llm": llm_name,
                        "p2_run_dir": str(p2_run_dir), "model_cfg": model_cfg})
 
-    for line in (p2_run_dir / "predictions.jsonl").read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
-        row = json.loads(line)
+    rows = [json.loads(ln) for ln in
+            (p2_run_dir / "predictions.jsonl").read_text(encoding="utf-8").splitlines() if ln.strip()]
+    write_lock = threading.Lock()
+
+    def _process(row) -> None:
         p2 = row.get("prediction") or {}
         # reasoning is intentionally NOT passed to the parser (see p6 prompt).
         prompt_text = _prompts.fill_in_prompt(template, {
@@ -164,10 +191,12 @@ def run_parser(
             model_name=llm_name, cost_entry=cost_entry,
             max_retries=int(call_cfg.get("max_retries", 5)), parse_fn=_client.parse_first_json,
         )
-        _write_record(run_dir, task, llm_name, row.get("sample_id"), result, ar,
-                      extra={"source_vlm": vlm_name})
+        with write_lock:
+            _write_record(run_dir, task, llm_name, row.get("sample_id"), result, ar,
+                          extra={"source_vlm": vlm_name})
 
-    print(f"[done] {task}: parsed {p2_run_dir} with {llm_name} -> {run_dir}")
+    _run_pool(_process, rows, concurrency)
+    print(f"[done] {task}: parsed {p2_run_dir} with {llm_name} ({len(rows)} rows) -> {run_dir}")
     return run_dir
 
 

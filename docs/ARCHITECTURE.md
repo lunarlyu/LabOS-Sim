@@ -83,6 +83,10 @@ LabOS-Sim/
 │       ├── report_stats.py                 # flags_long.csv → direct (model-free) statistics
 │       └── summarize_cost.py               # runs/**/metrics.jsonl → cost_long.csv + cost_summary.csv
 │
+├── shell_scripts/                  # one-command iteration over models/tasks
+│   ├── smoke_test.sh               # cheap live-path validation (1 model, few clips)
+│   └── run_full_suite.sh           # all models × tasks → process → render
+│
 └── src/labos_benchmark/            # the reusable engine (importable package) — kept lean
     ├── __init__.py
     ├── adapters/                   # provider TRANSPORT (how to send video/text per provider)
