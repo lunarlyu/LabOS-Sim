@@ -1,11 +1,9 @@
 You are evaluating a lab automation video.
 
-Question: Identify ALL outcomes and errors in this video. First decide whether
-the task was performed correctly. If not, report EVERY failure subtype you
-observe — not just one.
+Question: Identify ALL errors in this video. First decide whether the task was performed correctly. If not, report EVERY failure subtype you
+observe — there might be one or multiple.
 
-Focus only on the single target tube that is picked up and vortexed. Other tubes in the scene are irrelevant: ignore their state (e.g. another tube being
-uncapped or empty is NOT a failure).
+Focus only on the single target tube that is picked up and vortexed. Other tubes in the scene are irrelevant: ignore their state (e.g. another tube being uncapped or empty is NOT a failure).
 
 Correct vortexing protocol (evaluate only the single target tube being vortexed):
 
@@ -37,11 +35,9 @@ Instructions:
 - `failure_modes` must be empty if and only if `outcome` is `success`.
 - Order `failure_modes` by importance: list the single most important / most
   severe issue to fix FIRST.
-- Use `other_failure` only for a real deviation that none of the named subtypes
-  describe. When you include `other_failure` in `failure_modes`, describe each
+- Use `other_failure` only for a real deviation that none of the named subtypes describe. When you include `other_failure` in `failure_modes`, describe each
   such novel deviation in `additional_failures` (with visual evidence).
-  `additional_failures` must be non-empty if and only if `other_failure` is in
-  `failure_modes`; if `other_failure` is not in `failure_modes`, leave
+  `additional_failures` must be non-empty if and only if `other_failure` is in `failure_modes`; if `other_failure` is not in `failure_modes`, leave
   `additional_failures` empty (`[]`).
 
 Return exactly one JSON object:

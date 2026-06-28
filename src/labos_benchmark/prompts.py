@@ -18,10 +18,17 @@ PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
 # prompts/{operation}/<file> and have get_prompt_path join the operation.)
 PROMPT_TYPES: dict[str, str] = {
     "closed_binary": "p1_closed_binary.md",
-    "open_detection": "p2_open_detection.md",
-    "multilabel_classification": "p3_multilabel_classification.md",
-    "freetext_parser": "p6_freetext_subtype_parser.md",
+    "multilabel_classification": "p2_multilabel_classification.md",
+    "open_detection_strict": "p3_open_detection_strict.md",
+    "open_detection_free": "p4_open_detection_free.md",
+    "open_detection_strict_parser": "p5_open_detection_strict_parser.md",
+    "open_detection_free_parser": "p6_open_detection_free_parser.md",
 }
+
+
+def is_parser(prompt_type: str) -> bool:
+    """Parser prompt types map a prior VLM run's text onto the taxonomy."""
+    return prompt_type.endswith("_parser")
 
 
 def split_task(task_name: str) -> tuple[str, str]:
@@ -58,7 +65,7 @@ def fill_in_prompt(template: str, arguments: dict[str, str]) -> str:
     """Substitute ``{{key}}`` placeholders; warn on any left unfilled.
 
     Adapted from brdm's prompt.fill_in_prompt — matches the p6 prompt's
-    ``{{error_present}}`` / ``{{observed_errors}}`` / ``{{confidence}}`` scheme.
+    ``{{outcome}}`` / ``{{observed_errors}}`` / ``{{description}}`` scheme.
     """
     for key, value in arguments.items():
         template = template.replace("{{" + key + "}}", str(value))

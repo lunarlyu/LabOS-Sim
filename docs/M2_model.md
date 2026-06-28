@@ -24,7 +24,7 @@ one of two **channels**:
 
 Success clips (`Y_i = {}`) contribute only negative cells across all subtypes, so
 "recognizing success" is exactly behavior on the negative channel; "recognizing a
-failure" is behavior on the positive channel for that subtype. `build_flag_table.py`
+failure" is behavior on the positive channel for that subtype. `build_detection_table.py`
 produces this tensor as `detections_long.csv`; `fit_sdt_irt.py` consumes it.
 
 ## 2. The two models
@@ -154,7 +154,7 @@ WAIC and everything is reported with intervals rather than asserted.
 Run:
 
 ```
-python scripts/data_processing/build_flag_table.py \
+python scripts/data_processing/build_detection_table.py \
     --runs-root runs --outdir runs/processed
 python scripts/results_rendering/fit_sdt_irt.py \
     --table runs/processed/detections_long.csv --outdir results/<analysis_label>

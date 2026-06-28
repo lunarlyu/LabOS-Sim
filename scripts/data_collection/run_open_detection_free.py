@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Run the open-detection task (P2) against one or more VLMs.
-task = {operation}_open_detection. P2 is freeform; map it to the taxonomy later
-with run_freetext_parser.py (P6).
+"""Run open-detection FREE (P4) against one or more VLMs — error-UNaware.
+task = {operation}_open_detection_free. The VLM only describes the video against
+the protocol (it is not told this is an error-detection test); the failure modes
+are mined from its description later by run_open_detection_free_parser.py (P6).
 """
 from __future__ import annotations
 
@@ -12,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from labos_benchmark import runner  # noqa: E402
 
-PROMPT_TYPE = "open_detection"
+PROMPT_TYPE = "open_detection_free"
 
 
 def main() -> None:
@@ -20,14 +21,11 @@ def main() -> None:
     ap.add_argument("--operation", default="vortex", help="task = {operation}_%s" % PROMPT_TYPE)
     ap.add_argument("--models", nargs="+", required=True,
                     help="one or more model names from config/models.yaml")
-    ap.add_argument("--data", required=True,
-                    help="run_list.jsonl under data/ (subset for test, full for full run)")
-    ap.add_argument("--run-id", default=None,
-                    help="label grouping this run, e.g. test_01 (default: UTC timestamp)")
-    ap.add_argument("--camera-views", nargs="*", default=None,
-                    help="subset of angles, e.g. front gripper (default: all)")
-    ap.add_argument("--concurrency", type=int, default=1, help="parallel clips per model")
-    ap.add_argument("--limit", type=int, default=None, help="cap number of datapoints")
+    ap.add_argument("--data", required=True, help="run_list.jsonl under data/")
+    ap.add_argument("--run-id", default=None, help="label grouping this run (default: UTC timestamp)")
+    ap.add_argument("--camera-views", nargs="*", default=None, help="subset of angles (default: all)")
+    ap.add_argument("--concurrency", type=int, default=1)
+    ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--runs-root", default="runs")
     ap.add_argument("--data-root", default="data")
     args = ap.parse_args()

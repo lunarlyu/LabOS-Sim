@@ -101,11 +101,14 @@ def main(argv=None) -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--table", required=True, type=Path, help="runs/processed/detections_long.csv")
     ap.add_argument("--outdir", type=Path, default=Path("results/direct_stats"))
+    ap.add_argument("--task", default=None, help="restrict to a single task")
     ap.add_argument("--by-task", action="store_true",
                     help="split metrics by task as well as model (if the table has a task column)")
     args = ap.parse_args(argv)
 
     long = pd.read_csv(args.table)
+    if args.task and "task" in long.columns:
+        long = long[long["task"] == args.task]
     if "status" in long.columns:
         long = long[long["status"].fillna("completed") == "completed"]
     if "outcome_pred" in long.columns:

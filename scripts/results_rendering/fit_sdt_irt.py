@@ -56,7 +56,7 @@ log-likelihood and select between M1 and M2 by WAIC (lower is better).
 
 Two-stage pipeline
 ------------------
-Stage 1 (``build_flag_table.py``) digests the raw runs -- single-choice,
+Stage 1 (``build_detection_table.py``) digests the raw runs -- single-choice,
 multi-label P3, or P6-parsed P2 -- into one tidy ``detections_long.csv`` (one row
 per model x task x sample x subtype, with ``is_present`` / ``flagged``). Stage 2
 (this script) fits M1/M2 directly from that table via ``--table``. The legacy
@@ -67,7 +67,7 @@ multi-error items.
 Usage
 -----
     # Stage 1: raw runs -> detection table
-    python build_flag_table.py --runs-root runs --outdir runs/processed
+    python build_detection_table.py --runs-root runs --outdir runs/processed
 
     # Stage 2: fit M1/M2 from the table
     python fit_sdt_irt.py \
@@ -184,10 +184,11 @@ def load_flag_tensor(csv_path: Path, keep_parse_errors: bool = False):
     return out
 
 
-def load_flag_tensor_from_table(flags_csv: Path, keep_parse_errors: bool = False):
+def load_flag_tensor_from_table(flags_csv: Path, keep_parse_errors: bool = False,
+                                task: str | None = None):
     """Return the flag tensor built directly from Stage-1 ``detections_long.csv``.
 
-    This is the canonical Stage 2 input: ``build_flag_table.py`` already turned
+    This is the canonical Stage 2 input: ``build_detection_table.py`` already turned
     the raw runs (single-choice OR multi-label OR p6-parsed p2) into one tidy row
     per (model, sample_id, subtype) with ``is_present`` / ``flagged`` columns, so
     here we only index and stack -- no schema-specific one-hot logic. Multi-error
@@ -200,9 +201,18 @@ def load_flag_tensor_from_table(flags_csv: Path, keep_parse_errors: bool = False
     if missing:
         raise ValueError(
             f"flag table missing required columns: {sorted(missing)}. "
-            "Produce it with build_flag_table.py first."
+            "Produce it with build_detection_table.py first."
         )
 
+    if "task" in df.columns:
+        tasks = sorted(df["task"].dropna().unique())
+        if task is not None:
+            df = df[df["task"] == task]
+        elif len(tasks) > 1:
+            raise ValueError(
+                f"table mixes {len(tasks)} tasks {tasks}; pass --task to fit one "
+                "(each model must appear once per (sample, subtype))."
+            )
     if "status" in df.columns and not keep_parse_errors:
         df = df[df["status"].fillna("completed") == "completed"]
     if "outcome_pred" in df.columns:
@@ -422,11 +432,13 @@ def main(argv=None):
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     src = ap.add_mutually_exclusive_group(required=True)
     src.add_argument("--table", type=Path,
-                     help="detections_long.csv from build_flag_table.py (Stage 1). Preferred input.")
+                     help="detections_long.csv from build_detection_table.py (Stage 1). Preferred input.")
     src.add_argument("--input", type=Path,
                      help="legacy: raw per_sample_predictions.csv (single-choice). "
                           "Prefer --table for the multi-label / p6 pipeline.")
     ap.add_argument("--outdir", required=True, type=Path)
+    ap.add_argument("--task", default=None,
+                    help="fit only this task (required if the table mixes tasks)")
     ap.add_argument("--draws", type=int, default=1000)
     ap.add_argument("--tune", type=int, default=1000)
     ap.add_argument("--chains", type=int, default=2)
@@ -442,8 +454,9 @@ def main(argv=None):
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     if args.table:
-        data = load_flag_tensor_from_table(args.table, keep_parse_errors=args.keep_parse_errors)
-        input_desc = f"{args.table} (detection table)"
+        data = load_flag_tensor_from_table(args.table, keep_parse_errors=args.keep_parse_errors,
+                                           task=args.task)
+        input_desc = f"{args.table} (detection table" + (f", task={args.task})" if args.task else ")")
     else:
         data = load_flag_tensor(args.input, keep_parse_errors=args.keep_parse_errors)
         input_desc = f"{args.input} (raw single-choice CSV)"

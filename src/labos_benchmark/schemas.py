@@ -63,21 +63,33 @@ MULTILABEL_SCHEMA = {
     "additionalProperties": False,
 }
 
-# --- p2: open detection (freeform; parsed later by p6) ----------------------
-OPEN_DETECTION_SCHEMA = {
+# --- p3: open detection, STRICT (error-aware; parsed later by p5) ------------
+OPEN_DETECTION_STRICT_SCHEMA = {
     "type": "object",
     "properties": {
-        "error_present": {"type": "boolean"},
+        "outcome": {"type": "string", "enum": ["success", "failure"]},
+        "observed_errors": {"type": "string",
+                            "description": "Comma-separated errors; 'None' iff outcome is success."},
         "confidence": {"type": "number", "minimum": 0, "maximum": 1},
-        "observed_errors": {"type": "array", "items": {"type": "string"},
-                            "description": "Empty / 'None' iff error_present is false."},
-        "reasoning": {"type": "string"},
     },
-    "required": ["error_present", "confidence", "observed_errors", "reasoning"],
+    "required": ["outcome", "observed_errors", "confidence"],
     "additionalProperties": False,
 }
 
-# --- p6: freetext → subtype parser ------------------------------------------
+# --- p4: open detection, FREE (description; error-unaware; parsed by p6) -----
+OPEN_DETECTION_FREE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "outcome": {"type": "string", "enum": ["success", "failure"]},
+        "description": {"type": "string",
+                        "description": "Free-text account of the video; always present."},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    },
+    "required": ["outcome", "description", "confidence"],
+    "additionalProperties": False,
+}
+
+# --- p5 / p6: parser output (shared standardized schema) ---------------------
 PARSER_SCHEMA = {
     "type": "object",
     "properties": {
@@ -108,8 +120,10 @@ PARSER_SCHEMA = {
 SCHEMA_BY_PROMPT = {
     "closed_binary": CLOSED_BINARY_SCHEMA,
     "multilabel_classification": MULTILABEL_SCHEMA,
-    "open_detection": OPEN_DETECTION_SCHEMA,
-    "freetext_parser": PARSER_SCHEMA,
+    "open_detection_strict": OPEN_DETECTION_STRICT_SCHEMA,
+    "open_detection_free": OPEN_DETECTION_FREE_SCHEMA,
+    "open_detection_strict_parser": PARSER_SCHEMA,
+    "open_detection_free_parser": PARSER_SCHEMA,
 }
 
 

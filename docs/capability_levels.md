@@ -11,11 +11,16 @@ name which failure mode(s) occurred? This isolates *recognition* ability with al
 context handed over. (Prompts P1 and P3.)
 
 **Middle level — protocol given, taxonomy withheld.** The model is given the task
-and a written protocol, but *not* the list of failure modes. It must describe in
-free text what happened and, in doing so, surface any deviation on its own. This
-tests whether the model can *notice and articulate* failures without being primed
-with the answer set; a separate parser then maps its description onto the
-taxonomy for scoring. (Prompt P2, parsed by P6.)
+and a written protocol, but *not* the list of failure modes; a separate LLM parser
+then maps the model's free text onto the taxonomy for scoring. Two variants probe
+how much the framing matters:
+
+- **Strict / error-aware (P3 → P5 parser):** the model is told to detect errors
+  and list them succinctly.
+- **Free / error-unaware (P4 → P6 parser):** the model is only asked to *describe*
+  the video against the protocol — it is not told this is an error-detection test
+  — and the parser mines failure modes from its description. This tests whether a
+  model notices errors unprompted.
 
 **Hard level — task identification first.** This is the realistic deployment
 setting. The model is not handed a single, pre-labeled operation; instead it sees

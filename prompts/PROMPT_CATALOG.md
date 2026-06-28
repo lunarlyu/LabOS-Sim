@@ -1,99 +1,76 @@
 # Prompt Catalog
 
-Updated: 2026-06-27
+Updated: 2026-06-28
 
 This catalog defines the prompt families for LabOS-Sim vortexing evaluation.
-Prompt IDs are stable handles for benchmark configs, reports, and future
-cross-repo reproduction.
+Prompt IDs are stable handles for run configs, reports, and reproduction.
+Task names follow `{operation}_{prompt_type}` (e.g. `vortex_open_detection_strict`).
 
 ## Standardized output schema (fitting contract)
 
-Every prompt ultimately produces the same four fields, which are the input to the
-SDT-IRT models (M1/M2):
+The SDT-IRT models (M1/M2) consume one tidy table whose per-cell rows come from
+predictions in this core schema:
 
 ```
 { "outcome": "success" | "failure", "failure_modes": [], "confidence": 0.0, "reasoning": "" }
 ```
 
-- **P1** (closed binary) emits exactly the four core fields; `failure_modes` is
-  always `[]` (it does not classify subtypes).
-- **P3** (multi-label) emits the four core fields plus the `additional_failures`
-  diagnostic (see below).
-- **P2** (open detection) does NOT emit the core schema directly. It returns its
-  own freeform fields (`error_present`, `observed_errors`, `confidence`,
-  `reasoning`), which the **P6** parser converts into the core schema. P6 may
-  also return `outcome = "ambiguous"` for rows it cannot map (held out of
-  fitting).
-- `confidence` is a single scalar, collected as a diagnostic (calibration /
-  triage) — it is NOT consumed by the hard-flag M1/M2 fit. It is `null` when the
-  model gave none (never fabricated). Per-mode confidence is the enrichment path
-  if/when we fit a graded-response variant (M2-G).
-- For P3, `failure_modes` is ordered by importance (most important first), which
-  preserves the "main issue to fix" signal without a separate field.
-- `additional_failures` (emitted by P3 and P6) is a list of
-  `{description, evidence}` coupled to the `other_failure` flag: non-empty if and
-  only if `other_failure` is in `failure_modes`, otherwise `[]`. It captures
-  candidate new taxonomy entries. P6 additionally emits `ambiguous_mentions`
-  (parser-specific; P3 forces success/failure so it has no ambiguous bucket).
+Not every prompt emits the core schema directly:
 
-All prompts share the same correct-vortexing protocol and the same failure-mode
-definitions, and all are scoped to the single **target tube** being vortexed
-(other tubes in the scene are ignored). The taxonomy is: `cap_open`, `tube_drop`,
-`tube_empty`, `vortex_off`, `wrong_orientation`, `wrong_rack`, `rack_flipped`,
-`other_failure` (`repeated_steps` was removed).
+- **P1 / P2** emit it directly (P1: `failure_modes` always `[]`; P2: plus
+  `additional_failures`).
+- **P3 / P4** are freeform VLM outputs that are *parsed* into the core schema by
+  **P5 / P6** respectively. They are NOT fed to `build_detection_table` directly.
+- `confidence` is a diagnostic (calibration / triage), not consumed by the
+  hard-flag M1/M2 fit; `null` when the model gave none (never fabricated).
+- `additional_failures` (P2, P5, P6) is a `{description, evidence}` list coupled to
+  the `other_failure` flag (non-empty iff `other_failure ∈ failure_modes`).
+  Parsers (P5/P6) additionally emit `ambiguous_mentions` and may return
+  `outcome = "ambiguous"` (held out of fitting).
+
+All prompts share the same vortexing protocol and are scoped to the single
+**target tube**. The taxonomy is: `cap_open`, `tube_drop`, `tube_empty`,
+`vortex_off`, `wrong_orientation`, `wrong_rack`, `rack_flipped`, `other_failure`.
 
 ## Capability levels
 
-- **Easy** — task + success definition + failure-mode taxonomy are all given.
-  Can the VLM separate success from failure, and name the failure modes?
-  Prompts: P1, P3.
-- **Middle** — task + written protocol given, but NOT the failure-mode taxonomy.
-  Can the VLM describe what happened and surface the failures in free text?
-  Prompt: P2 (parsed by P6).
-- **Hard** — realistic deployment: identify the operation in a wet-lab, infer its
-  success definition (retrieve the per-operation protocol), then detect failures.
-  NOT YET TESTABLE on the current database (one operation, no full protocol).
-  Future work; see `capability_levels.md`.
+- **Easy** — task + success definition + failure-mode taxonomy all given.
+  Prompts: P1 (binary), P2 (multi-label).
+- **Middle** — task + protocol given, taxonomy withheld; two variants:
+  - **P3 + P5 (strict / error-aware):** the VLM is told to detect errors and
+    lists them succinctly; P5 maps them to the taxonomy.
+  - **P4 + P6 (free / error-unaware):** the VLM only *describes* the video (not
+    told it is an error-detection test); P6 mines failure modes from the
+    description. Tests whether a model notices errors unprompted.
+- **Hard** — identify the operation + retrieve its protocol, then detect. Not yet
+  testable (one operation, no full protocols); see `../docs/capability_levels.md`.
 
 ## Active prompts
 
-| Prompt ID | Name | Level | Primary Question | Output | Prompt File | Runner Task |
-|---|---|---|---|---|---|---|
-| P1 | Closed Binary | Easy | Was this performed correctly? | 4 core fields; `failure_modes` always `[]` | `p1_closed_binary.md` | `binary_success` |
-| P2 | Open Detection (protocol-grounded) | Middle | Given the protocol, was there any error? Describe each. | Freeform (`error_present`, `observed_errors`, `confidence`, `reasoning`) → P6 | `p2_open_detection.md` | not wired yet |
-| P3 | Multi-label Classification | Easy | Which failure subtype(s) occurred? | 4 core fields + `additional_failures` | `p3_multilabel_classification.md` | replaces `single_choice_multiclass` |
-| P6 | Free-text → Subtype Parser | (infra) | Map P2 free text to the core schema. | Core schema + `additional_failures`, `ambiguous_mentions` | `p6_freetext_subtype_parser.md` | parser stage |
+| ID | Name | Level | VLM output | Parsed by | Prompt File |
+|---|---|---|---|---|---|
+| P1 | Closed Binary | Easy | core (`failure_modes`=[]) | — | `p1_closed_binary.md` |
+| P2 | Multi-label Classification | Easy | core + `additional_failures` | — | `p2_multilabel_classification.md` |
+| P3 | Open Detection — strict (error-aware) | Middle | `outcome`, `observed_errors` (comma string), `confidence` | P5 | `p3_open_detection_strict.md` |
+| P4 | Open Detection — free (error-unaware) | Middle | `outcome`, `description`, `confidence` | P6 | `p4_open_detection_free.md` |
+| P5 | Strict parser (infra) | — | core schema + diagnostics | — | `p5_open_detection_strict_parser.md` |
+| P6 | Free parser (infra) | — | core schema + diagnostics | — | `p6_open_detection_free_parser.md` |
 
-### P2 → P6 parsing
+### Parsing (P3→P5, P4→P6)
 
-P6 takes one P2 output at a time and fills `{{error_present}}`,
-`{{observed_errors}}`, `{{confidence}}` (P2's `reasoning` is deliberately NOT
-passed, so the parser is not biased by P2's rationale). Behavior:
+The runner fills the parser prompt's `{{...}}` placeholders by field name from the
+source VLM prediction (`reasoning` excluded):
 
-- If `error_present` is `false`, P6 sets `outcome = "success"`, `failure_modes =
-  []`, and empty diagnostics — before any text parsing.
-- Otherwise it maps `observed_errors` onto the taxonomy, returning `failure` or
-  `ambiguous`.
-- `confidence` is carried through verbatim and set to `null` if P2 gave none.
+- **P5** gets `{{outcome}}`, `{{observed_errors}}`, `{{confidence}}`. It honors
+  `outcome`: `success` → short-circuit; otherwise map the comma-separated
+  `observed_errors` onto the taxonomy.
+- **P6** gets `{{outcome}}`, `{{description}}`, `{{confidence}}`. It does NOT
+  short-circuit on the VLM `outcome` (the VLM was not error-hunting); it reads the
+  `description` and identifies the failure modes it reports.
 
-## Removed prompts
+## History
 
-These files were deleted (2026-06-26) and substituted by the refined versions:
-
-- `p3_multiclass_classification.md` → replaced by `p3_multilabel_classification.md`
-  (single-choice forced mutually-exclusive flags, breaking M2's conditional
-  independence and blocking multi-error clips).
-- `p4_free_form_description.md` → folded into the middle-level prompt P2.
-- `p5_protocol_grounded_counterfactual.md` → folded into P2 (counterfactual field
-  dropped as out-of-scope for detection).
-- `p5_protocol_grounded_description.md` → merged into P2 (P2 and P5 were the same
-  middle-level task; P2 now carries the numbered protocol).
-
-## Legacy prompt files
-
-- `vortexing_binary_success.md`: prior production P1 prompt used by `binary_success`.
-- `vortexing_failure_mode_classification.md`: older multi-label P3-style prompt.
-- `vortexing_single_choice_multiclass.md`: prior production single-choice P3 prompt.
-
-For new benchmark development, prefer the `p*_*.md` files and update runner task
-mappings explicitly when a prompt graduates from catalog entry to active task.
+Earlier iterations (now superseded): a single-choice `p3_multiclass`, a single
+merged `p2_open_detection` + `p6_freetext_subtype_parser`, and the free-form
+`p4`/`p5` protocol prompts. Legacy production prompts (`vortexing_*.md`) remain in
+git history.

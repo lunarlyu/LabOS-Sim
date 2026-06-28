@@ -146,6 +146,12 @@ def read_runs_root(runs_root: Path, metadata: Path | None = None) -> tuple[list[
                 continue
             row = json.loads(line)
             pred = row.get("prediction") or {}
+            # Skip raw freeform VLM outputs (open_detection_strict/free): they carry
+            # observed_errors/description, not failure_modes, and must be ingested via
+            # their parser run instead. Parse-error rows (prediction None) are kept
+            # so they can be counted/dropped downstream.
+            if row.get("success") and "failure_modes" not in pred:
+                continue
             sid = row.get("sample_id")
             expected = row.get("expected") or {}
             if expected:

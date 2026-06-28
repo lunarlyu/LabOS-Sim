@@ -18,7 +18,7 @@ python scripts/data_collection/run_multilabel_classification.py \
     --camera-views front gripper --concurrency 2
 
 echo "== build detection table =="
-python scripts/data_processing/build_flag_table.py --runs-root runs --outdir runs/processed
+python scripts/data_processing/build_detection_table.py --runs-root runs --outdir runs/processed
 
 echo "== direct stats + cost =="
 python scripts/results_rendering/report_stats.py --table runs/processed/detections_long.csv --outdir results/smoke

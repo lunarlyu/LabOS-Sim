@@ -1,7 +1,7 @@
 # LabOS-Sim benchmark — architecture & target layout
 
 Status: target design for the re-organized pipeline (branch `carrie/branching`).
-Updated: 2026-06-27. This `docs/` folder is the place for collaborator-facing
+Updated: 2026-06-28. This `docs/` folder is the place for collaborator-facing
 design notes.
 
 ## Purpose
@@ -12,9 +12,11 @@ Test a VLM's ability to identify failure modes in lab-automation videos
 
 Three capability levels (detail in `capability_levels.md`):
 
-- **Easy** — task + success definition + failure-mode taxonomy given (prompts P1, P3).
-- **Middle** — task + protocol given, taxonomy withheld; the VLM describes failures
-  in free text, which the P6 LLM-parser maps onto the taxonomy (prompt P2 → P6).
+- **Easy** — task + success definition + failure-mode taxonomy given (prompts P1
+  binary, P2 multi-label).
+- **Middle** — task + protocol given, taxonomy withheld; two variants:
+  P3 (strict / error-aware) → P5 parser, and P4 (free description / error-unaware)
+  → P6 parser.
 - **Hard** — identify the operation and retrieve its protocol before detecting
   failures. Not yet testable (one operation, no full protocols); future work.
 
@@ -36,10 +38,12 @@ LabOS-Sim/
 │   └── defaults.yaml               # default media policy / run params (overridable by CLI)
 │
 ├── prompts/                        # single source of truth for prompts (versioned)
-│   ├── p1_closed_binary.md
-│   ├── p2_open_detection.md
-│   ├── p3_multilabel_classification.md
-│   ├── p6_freetext_subtype_parser.md
+│   ├── p1_closed_binary.md                 # easy: binary
+│   ├── p2_multilabel_classification.md     # easy: multi-label taxonomy
+│   ├── p3_open_detection_strict.md         # middle: error-aware → p5
+│   ├── p4_open_detection_free.md           # middle: description, error-unaware → p6
+│   ├── p5_open_detection_strict_parser.md  # parser for p3
+│   ├── p6_open_detection_free_parser.md    # parser for p4
 │   └── PROMPT_CATALOG.md
 │
 ├── metadata/                       # legacy ground-truth source json (input to build_metadata)
@@ -54,12 +58,12 @@ LabOS-Sim/
 ├── runs/                           # all run artifacts (GITIGNORED, regenerable)
 │   ├── raw/                        # run_id-first: one tree per run
 │   │   └── {run_id}/                              # e.g. test_01, full_01
-│   │       ├── {task}/{vlm}/                      # P1, P2, P3 (VLM collection)
+│   │       ├── {task}/{vlm}/                      # P1-P4 (VLM collection)
 │   │       │   ├── predictions.jsonl             # incl. ground-truth "expected" per row
 │   │       │   ├── metrics.jsonl                 # one CallMetrics row per API call
 │   │       │   ├── artifacts/                    # per-call request/response/raw text
 │   │       │   └── run_config.json
-│   │       └── {task}/{vlm}/{llm}/                # P6 parser (source VLM + parsing LLM)
+│   │       └── {task}/{vlm}/{llm}/                # P5/P6 parsers (source VLM + parsing LLM)
 │   └── processed/                 # digested intermediates, MERGED across run_ids
 │       ├── detections_long.csv    # one row per (model, task, sample, subtype) + run_id provenance
 │       └── cost_long.csv          # one row per call, flattened from all metrics.jsonl
@@ -76,13 +80,15 @@ LabOS-Sim/
 │   ├── data_ingestion/
 │   │   ├── download_real_human.py          # huggingface_hub snapshot → data/ (needs HF_TOKEN)
 │   │   └── build_metadata.py               # source json → data/{dataset}/metadata.jsonl
-│   ├── data_collection/                    # all take --models, --data run_list.jsonl, --run-id
-│   │   ├── run_closed_binary.py            # task=closed_binary            → P1 → VLM
-│   │   ├── run_open_detection.py           # task=open_detection           → P2 → VLM (freeform)
-│   │   ├── run_multilabel_classification.py# task=multilabel_classification→ P3 → VLM
-│   │   └── run_freetext_parser.py          # task=freetext_parser          → P6 → LLM (digests P2)
+│   ├── data_collection/                    # VLM scripts take --models, --data, --run-id; parsers take --llms, --source-run-dir
+│   │   ├── run_closed_binary.py                  # P1 → VLM
+│   │   ├── run_multilabel_classification.py      # P2 → VLM
+│   │   ├── run_open_detection_strict.py          # P3 → VLM (error-aware)
+│   │   ├── run_open_detection_free.py            # P4 → VLM (description)
+│   │   ├── run_open_detection_strict_parser.py   # P5 → LLM (parses P3)
+│   │   └── run_open_detection_free_parser.py     # P6 → LLM (parses P4)
 │   ├── data_processing/
-│   │   └── build_flag_table.py             # runs/raw/** → runs/processed/detections_long.csv
+│   │   └── build_detection_table.py             # runs/raw/** → runs/processed/detections_long.csv
 │   └── results_rendering/
 │       ├── fit_sdt_irt.py                  # detections_long.csv → M1/M2 fit → results/{label}/
 │       ├── report_stats.py                 # detections_long.csv → direct (model-free) statistics
@@ -102,7 +108,7 @@ LabOS-Sim/
     │   └── cosmos_reason.py        # local vLLM server
     ├── client.py                   # unified call layer (≈ brdm llm.py): CallResult + CallMetrics
     │                               #   + pricing + retry/backoff over an adapter
-    ├── schemas.py                  # SCHEMA_BY_PROMPT: P1/P3 structured, P2 freeform, P6 parser
+    ├── schemas.py                  # SCHEMA_BY_PROMPT: P1/P2 structured, P3/P4 freeform, P5/P6 parser
     ├── prompts.py                  # load .md, {{key}} fill, PROMPT_BY_TASK + get_prompt_path()
     ├── dataset.py                  # DataPoint dataclass + load_datapoints (metadata/run_list jsonl)
     ├── media.py                    # transcode / contact-sheet / data-uri
@@ -114,8 +120,9 @@ LabOS-Sim/
 
 **Entry points vs. engine.** Everything in `scripts/` is a thin CLI: parse args,
 load config, call into `src/labos_benchmark/`, write to `runs/` or `results/`.
-All real logic lives in the package. The four `run_*.py` differ only in the
-`--task` they pass to a common `runner.collect()`.
+All real logic lives in the package. The VLM `run_*.py` differ only in the
+`--task` they pass to `runner.collect()`; the two parser scripts call
+`runner.run_parser()`.
 
 **Task is the key that resolves everything.** Task names follow
 `{operation}_{prompt_type}` (e.g. `vortex_multilabel_classification`; later
@@ -128,12 +135,15 @@ plumbing, just a new `{operation}_` prefix.
 ```python
 # prompts.py — keyed by prompt_type; split_task() peels {operation} off the front
 PROMPT_TYPES = {
-    "closed_binary":             "p1_closed_binary.md",
-    "open_detection":            "p2_open_detection.md",
-    "multilabel_classification": "p3_multilabel_classification.md",
-    "freetext_parser":           "p6_freetext_subtype_parser.md",
+    "closed_binary":                "p1_closed_binary.md",
+    "multilabel_classification":    "p2_multilabel_classification.md",
+    "open_detection_strict":        "p3_open_detection_strict.md",
+    "open_detection_free":          "p4_open_detection_free.md",
+    "open_detection_strict_parser": "p5_open_detection_strict_parser.md",
+    "open_detection_free_parser":   "p6_open_detection_free_parser.md",
 }
-def split_task(task_name) -> tuple[str, str]: ...   # "vortex_closed_binary" -> ("vortex", "closed_binary")
+def split_task(task_name) -> tuple[str, str]: ...   # "vortex_open_detection_strict" -> ("vortex", "open_detection_strict")
+def is_parser(prompt_type) -> bool: ...             # prompt_type.endswith("_parser")
 def get_prompt_path(task_name) -> Path: ...
 ```
 
@@ -147,7 +157,7 @@ in a sprawl of pre-authored config files. (This is why the old
 **Run_id-first layout.** `runs/raw/{run_id}/{task}/{vlm}/` (and
 `.../{vlm}/{llm}/` for the parser) groups everything from one run under its
 `run_id` (e.g. `test_01`, `full_01`), so test vs. full runs are visibly separate.
-The `{llm}` level appears only for `freetext_parser`, because P6's output depends
+The `{llm}` level appears only for the parser tasks, because their output depends
 on both the VLM that produced the P2 text and the LLM that parsed it.
 `runs/processed/` merges raw runs into tidy tables with `run_id` provenance, so
 `results/{analysis_label}/` can integrate across multiple runs rather than being
@@ -167,8 +177,8 @@ gitignored. `config/`, `prompts/`, `data/**/metadata.jsonl`, `docs/`, `results/`
 (`results/` is the deliverable; `runs/` is the regenerable raw material behind it.)
 
 **Lean package.** `src/labos_benchmark/` deliberately keeps few modules: cost +
-call wrapper merged into `client.py`; all schemas in one `schemas.py`; the P6
-parser folded into `runner.py`; key loading folded into `io_utils.py`.
+call wrapper merged into `client.py`; all schemas in one `schemas.py`; the parser
+logic folded into `runner.py`; key loading folded into `io_utils.py`.
 
 ## Data flow
 
@@ -178,20 +188,22 @@ config/ + prompts/ + data/{dataset}/metadata.jsonl + data/run_list.jsonl   (inpu
         ▼  scripts/data_collection/run_*.py    (--models, --data run_list, --run-id; via adapters + client)
 runs/raw/{run_id}/{task}/{vlm}[/{llm}]/        predictions.jsonl (+ expected) + metrics.jsonl
         │
-        ▼  scripts/data_processing/build_flag_table.py   (globs runs/raw/**, truth from records)
+        ▼  scripts/data_processing/build_detection_table.py   (globs runs/raw/**, truth from records)
 runs/processed/detections_long.csv  (+ cost_long.csv)
         │
         ▼  scripts/results_rendering/{fit_sdt_irt.py, report_stats.py, summarize_cost.py}
 results/{analysis_label}/   leaderboard, M1/M2 fits, direct stats, cost_summary, figures
 ```
 
-P6 is a collection step: `run_freetext_parser.py` takes each P2 freeform output,
-fills it into the P6 prompt (`{{error_present}}`, `{{observed_errors}}`,
-`{{confidence}}`; P2's `reasoning` is intentionally not passed), calls a text LLM,
-and writes parsed labels under the same run_id at
-`runs/raw/{run_id}/{op}_freetext_parser/{vlm}/{llm}/`. `build_flag_table.py` then
-digests both the direct P3 outputs and these parsed-P2 outputs into the same
-`detections_long.csv`.
+Parsing is a collection step. The runner fills the parser prompt's `{{...}}`
+placeholders from the source VLM prediction by field name (`reasoning` excluded):
+P5 gets `{{outcome}}`/`{{observed_errors}}`/`{{confidence}}` from a P3 run; P6 gets
+`{{outcome}}`/`{{description}}`/`{{confidence}}` from a P4 run. Output is written
+under the same run_id at `runs/raw/{run_id}/{op}_open_detection_{strict|free}_parser/{vlm}/{llm}/`.
+`build_detection_table.py` ingests the parsed P5/P6 outputs (and direct P1/P2
+outputs) — it skips the raw P3/P4 freeform records, which carry no `failure_modes`
+— into `detections_long.csv`. (Each `fit_sdt_irt.py`/`report_stats.py` run picks one
+`--task`, since a model must appear once per (sample, subtype).)
 
 ## Data model (DataPoint)
 
@@ -261,7 +273,7 @@ written for this branch. Sources: **jren-A** = `jren/benchmarking` System A
 | `src/labos_benchmark/schemas.py` | jren-A `src/labos_benchmark/schemas.py` | adapted (new taxonomy: `repeated_steps` removed, `additional_failures` + P2/P6 schemas added) |
 | `src/labos_benchmark/runner.py` | inspired by jren-A `runner.py` | new (one loop for VLM tasks + the P6 parser) |
 | `scripts/data_collection/run_*.py` | pattern from jren-A `scripts/run_benchmark.py` | new (thin CLIs) |
-| `scripts/data_processing/build_flag_table.py` | local working-tree script (was untracked) | refined here (multi-run glob, new taxonomy, provenance cols) |
+| `scripts/data_processing/build_detection_table.py` | local working-tree script (was untracked) | refined here (multi-run glob, new taxonomy, provenance cols) |
 | `scripts/results_rendering/fit_sdt_irt.py` | local working-tree script (was untracked) | refined here (reads the flag table; new taxonomy) |
 | `scripts/results_rendering/report_stats.py` | — | new |
 | `scripts/results_rendering/summarize_cost.py` | — | new |

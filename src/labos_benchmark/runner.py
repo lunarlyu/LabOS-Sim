@@ -3,8 +3,8 @@
 Two modes, dispatched by prompt_type:
   * VLM tasks (closed_binary / open_detection / multilabel_classification):
         iterate dataset samples, send video + prompt to a VLM.
-  * freetext_parser (p6): iterate a prior p2 run's outputs, fill the p6 prompt,
-        send text to an LLM.
+  * parser tasks (p5/p6): iterate a prior p3/p4 run's outputs, fill the parser
+        prompt, send text to an LLM.
 
 Outputs go to runs/raw/{run_id}/{task}/{vlm}[/{llm}]/ with predictions.jsonl,
 metrics.jsonl, run_config.json and per-call artifacts. The run_id (e.g. test_01,
@@ -105,8 +105,8 @@ def collect(
     from .media import maybe_transcode_videos
 
     ptype = _prompts.prompt_type_of(task)
-    if ptype == "freetext_parser":
-        raise ValueError("Use run_parser() for the freetext_parser task.")
+    if _prompts.is_parser(ptype):
+        raise ValueError(f"Use run_parser() for parser task {task!r}.")
 
     model_cfg = dict(config["models"][model_name])
     adapter = get_adapter(model_cfg["adapter"], model_cfg)
@@ -157,25 +157,29 @@ def collect(
 def run_parser(
     task: str,
     llm_name: str,
-    p2_run_dir: str | Path,
+    source_run_dir: str | Path,
     config: dict,
     *,
     run_id: str | None = None,
     concurrency: int = 1,
     runs_root: str | Path = "runs",
 ) -> Path:
-    """Fill the p6 prompt from each p2 prediction and call a text LLM.
+    """Fill a parser prompt from each source VLM prediction and call a text LLM.
 
-    p2_run_dir is runs/raw/{run_id}/{op}_open_detection/{vlm}. The parser output
-    goes under the same run_id at {run_id}/{op}_freetext_parser/{vlm}/{llm}/.
+    source_run_dir is runs/raw/{run_id}/{op}_open_detection_{strict|free}/{vlm}.
+    The parser output goes under the same run_id at
+    {run_id}/{op}_open_detection_{strict|free}_parser/{vlm}/{llm}/. The source
+    prediction's fields (outcome, observed_errors OR description, confidence) are
+    filled into the parser prompt's {{...}} placeholders by name; `reasoning` is
+    never passed.
     """
-    if _prompts.prompt_type_of(task) != "freetext_parser":
-        raise ValueError(f"run_parser expects a *_freetext_parser task, got {task}")
+    if not _prompts.is_parser(_prompts.prompt_type_of(task)):
+        raise ValueError(f"run_parser expects a *_parser task, got {task!r}")
 
-    p2_run_dir = Path(p2_run_dir)
-    vlm_name = p2_run_dir.name                 # {vlm}
+    source_run_dir = Path(source_run_dir)
+    vlm_name = source_run_dir.name             # {vlm}
     if run_id is None:
-        run_id = p2_run_dir.parent.parent.name  # raw/{run_id}/{p2_task}/{vlm}
+        run_id = source_run_dir.parent.parent.name  # raw/{run_id}/{src_task}/{vlm}
     model_cfg = dict(config["models"][llm_name])
     adapter = get_adapter(model_cfg["adapter"], model_cfg)
     cost_entry = config["model_costs"].get(model_cfg.get("provider_model_id"))
@@ -185,20 +189,17 @@ def run_parser(
     run_dir = _new_run_dir(run_id, task, vlm_name, llm_name, runs_root=runs_root)
     atomic_write_json(run_dir / "run_config.json",
                       {"run_id": run_id, "task": task, "vlm": vlm_name, "llm": llm_name,
-                       "p2_run_dir": str(p2_run_dir), "model_cfg": model_cfg})
+                       "source_run_dir": str(source_run_dir), "model_cfg": model_cfg})
 
     rows = [json.loads(ln) for ln in
-            (p2_run_dir / "predictions.jsonl").read_text(encoding="utf-8").splitlines() if ln.strip()]
+            (source_run_dir / "predictions.jsonl").read_text(encoding="utf-8").splitlines() if ln.strip()]
     write_lock = threading.Lock()
 
     def _process(row) -> None:
-        p2 = row.get("prediction") or {}
-        # reasoning is intentionally NOT passed to the parser (see p6 prompt).
-        prompt_text = _prompts.fill_in_prompt(template, {
-            "error_present": json.dumps(p2.get("error_present")),
-            "observed_errors": json.dumps(p2.get("observed_errors") or []),
-            "confidence": json.dumps(p2.get("confidence")),
-        })
+        src = row.get("prediction") or {}
+        # Fill placeholders by field name from the source prediction (reasoning excluded).
+        fill = {k: json.dumps(v) for k, v in src.items() if k != "reasoning"}
+        prompt_text = _prompts.fill_in_prompt(template, fill)
         result, ar = _client.call_with_retries(
             adapter, prompt=prompt_text, media=[],
             request_metadata={"task": task, "vlm": vlm_name, "llm": llm_name,
@@ -211,7 +212,7 @@ def run_parser(
                           expected=row.get("expected"), extra={"source_vlm": vlm_name})
 
     _run_pool(_process, rows, concurrency)
-    print(f"[done] {run_id} / {task}: parsed {p2_run_dir} with {llm_name} ({len(rows)} rows) -> {run_dir}")
+    print(f"[done] {run_id} / {task}: parsed {source_run_dir} with {llm_name} ({len(rows)} rows) -> {run_dir}")
     return run_dir
 
 
