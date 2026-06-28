@@ -23,15 +23,15 @@ def main(argv=None) -> None:
     raw = Path(args.runs_root) / "raw"
     rows = []
     for mp in raw.glob("**/metrics.jsonl"):
-        rel = mp.relative_to(raw)            # {task}/.../{run_id}/metrics.jsonl
-        task = rel.parts[0]
-        run_id = mp.parent.name
+        rel = mp.relative_to(raw)            # {run_id}/{task}/{vlm}[/{llm}]/metrics.jsonl
+        run_id = rel.parts[0]
+        task = rel.parts[1] if len(rel.parts) > 1 else ""
         for line in mp.read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
             d = json.loads(line)
+            d.setdefault("run_id", run_id)
             d["task"] = task
-            d["run_id"] = run_id
             rows.append(d)
 
     if not rows:

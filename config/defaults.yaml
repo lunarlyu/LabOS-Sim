@@ -1,21 +1,25 @@
 # Default run parameters. CLI flags override these. The runner snapshots the
 # resolved config into each run dir as run_config.json for reproducibility.
-
-dataset:
-  metadata_path: metadata/real_human_samples_no_multiple.json
-  data_root: data/real_human
+# (Which datapoints to run comes from --data run_list.jsonl, not from here.)
 
 media:
   input_type: video            # video | image_contact_sheet
-  camera_views: []             # [] = all views
+  camera_views: []             # [] = all angles (override per run with --camera-views)
   max_videos_per_sample: 0     # 0 = all
-  max_total_video_mb_per_request: 250
-  transcode:
-    enabled: true
-    max_width: 1080
-    fps: 30
-    crf: 28
-    preset: veryfast
+  fairness_profile: canonical_clip_1080px_30fps
+  preprocess:                  # media.py reads media.preprocess.{transcode,contact_sheet}
+    transcode:
+      enabled: true
+      max_width: 1080
+      fps: 30
+      crf: 28
+      preset: veryfast
+    contact_sheet:
+      max_width: 720
+      fps: 1
+      columns: 4
+      rows: 8
+      quality: 3
 
 call:
   max_retries: 5

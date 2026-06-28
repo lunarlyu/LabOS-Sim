@@ -25,7 +25,7 @@ one of two **channels**:
 Success clips (`Y_i = {}`) contribute only negative cells across all subtypes, so
 "recognizing success" is exactly behavior on the negative channel; "recognizing a
 failure" is behavior on the positive channel for that subtype. `build_flag_table.py`
-produces this tensor as `flags_long.csv`; `fit_sdt_irt.py` consumes it.
+produces this tensor as `detections_long.csv`; `fit_sdt_irt.py` consumes it.
 
 ## 2. The two models
 
@@ -155,10 +155,9 @@ Run:
 
 ```
 python scripts/data_processing/build_flag_table.py \
-    --runs-root runs --metadata metadata/real_human_samples_no_multiple.json \
-    --outdir runs/processed
+    --runs-root runs --outdir runs/processed
 python scripts/results_rendering/fit_sdt_irt.py \
-    --flags runs/processed/flags_long.csv --outdir results/<analysis_label>
+    --table runs/processed/detections_long.csv --outdir results/<analysis_label>
 ```
 
 ## 7. Assumptions and limitations

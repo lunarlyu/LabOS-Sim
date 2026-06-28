@@ -3,8 +3,8 @@
 task = {operation}_freetext_parser.
 
 Fills the P6 prompt with each P2 output's error_present / observed_errors /
-confidence (NOT reasoning) and writes parsed taxonomy labels. Accepts one or more
-parsing LLMs.
+confidence (NOT reasoning) and writes parsed taxonomy labels. Output is placed
+under the same run_id at runs/raw/{run_id}/{op}_freetext_parser/{vlm}/{llm}/.
 """
 from __future__ import annotations
 
@@ -24,7 +24,9 @@ def main() -> None:
     ap.add_argument("--llms", nargs="+", required=True,
                     help="one or more text-LLM model names from config/models.yaml")
     ap.add_argument("--p2-run-dir", required=True,
-                    help="runs/raw/{operation}_open_detection/{vlm}/{run_id} to parse")
+                    help="runs/raw/{run_id}/{operation}_open_detection/{vlm} to parse")
+    ap.add_argument("--run-id", default=None,
+                    help="override run_id (default: inferred from --p2-run-dir)")
     ap.add_argument("--concurrency", type=int, default=1, help="parallel rows per LLM")
     ap.add_argument("--runs-root", default="runs")
     args = ap.parse_args()
@@ -32,7 +34,7 @@ def main() -> None:
     cfg = runner.load_config()
     task = f"{args.operation}_{PROMPT_TYPE}"
     for llm in args.llms:
-        runner.run_parser(task, llm, args.p2_run_dir, cfg,
+        runner.run_parser(task, llm, args.p2_run_dir, cfg, run_id=args.run_id,
                           concurrency=args.concurrency, runs_root=args.runs_root)
 
 

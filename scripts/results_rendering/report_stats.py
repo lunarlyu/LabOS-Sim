@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Direct (non-Bayesian) statistics from the flag table.
 
-Reads runs/processed/flags_long.csv and reports, per model (optionally split by
+Reads runs/processed/detections_long.csv and reports, per model (optionally split by
 task), the headline classification metrics — a model-free complement to the
 SDT-IRT fit (fit_sdt_irt.py). These are the "report direct statistics from the
 table" deliverable.
@@ -99,13 +99,13 @@ def per_model_outcome(long: pd.DataFrame, subtype_df: pd.DataFrame,
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--flags", required=True, type=Path, help="runs/processed/flags_long.csv")
+    ap.add_argument("--table", required=True, type=Path, help="runs/processed/detections_long.csv")
     ap.add_argument("--outdir", type=Path, default=Path("results/direct_stats"))
     ap.add_argument("--by-task", action="store_true",
                     help="split metrics by task as well as model (if the table has a task column)")
     args = ap.parse_args(argv)
 
-    long = pd.read_csv(args.flags)
+    long = pd.read_csv(args.table)
     if "status" in long.columns:
         long = long[long["status"].fillna("completed") == "completed"]
     if "outcome_pred" in long.columns:
@@ -124,7 +124,7 @@ def main(argv=None) -> None:
 
     lines = [
         "# Direct statistics (model-free)\n",
-        f"- Source: `{args.flags}`",
+        f"- Source: `{args.table}`",
         f"- Grouping: {' x '.join(group_cols)}",
         f"- Models: {', '.join(sorted(long['model'].unique()))}",
         f"- Subtypes: {', '.join(sorted(long['subtype'].unique()))}\n",

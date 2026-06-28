@@ -119,41 +119,48 @@ def read_jsonl_run(jsonl: Path, metadata: Path) -> tuple[list[dict], str]:
     return records, schema or "single_choice_multiclass"
 
 
-def read_runs_root(runs_root: Path, metadata: Path) -> tuple[list[dict], str]:
-    """Glob runs/raw/**/predictions.jsonl (the new layout) into uniform records.
+def read_runs_root(runs_root: Path, metadata: Path | None = None) -> tuple[list[dict], str]:
+    """Glob runs/raw/**/predictions.jsonl (the run_id-first layout) into records.
 
-    Each predictions.jsonl row is the runner's record:
-    {task, model, sample_id, prediction: {outcome, failure_modes, confidence, ...},
-     success, ...}. Provenance (run_id, task) is taken from the path
-    runs/raw/{task}/.../{run_id}/predictions.jsonl so multiple runs merge into one
-    table that downstream analysis can filter or pool.
+    Layout: runs/raw/{run_id}/{task}/{vlm}[/{llm}]/predictions.jsonl. Each record
+    is the runner's row: {run_id, task, model, sample_id, prediction:{outcome,
+    failure_modes, confidence,...}, success, expected:{outcome, failure_modes}}.
+    Ground truth is read from each record's ``expected`` field (no metadata
+    needed); ``--metadata`` is an optional fallback for older runs.
     """
-    meta = json.loads(metadata.read_text(encoding="utf-8"))
-    samples = meta["samples"] if isinstance(meta, dict) and "samples" in meta else meta
-    truth_by_id = {
-        s["sample_id"]: _truth_set_from_failure_modes(s.get("failure_modes"))
-        for s in samples
-    }
+    truth_by_id: dict[str, set] = {}
+    if metadata is not None:
+        meta = json.loads(Path(metadata).read_text(encoding="utf-8"))
+        samples = meta["samples"] if isinstance(meta, dict) and "samples" in meta else meta
+        truth_by_id = {s["sample_id"]: _truth_set_from_failure_modes(s.get("failure_modes"))
+                       for s in samples}
 
     raw = Path(runs_root) / "raw"
     records: list[dict] = []
     for pj in sorted(raw.glob("**/predictions.jsonl")):
-        rel = pj.relative_to(raw)               # {task}/.../{run_id}/predictions.jsonl
-        task = rel.parts[0]
-        run_id = pj.parent.name
+        rel = pj.relative_to(raw)               # {run_id}/{task}/{vlm}[/{llm}]/predictions.jsonl
+        run_id = rel.parts[0]
+        task = rel.parts[1] if len(rel.parts) > 1 else ""
         for line in pj.read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
             row = json.loads(line)
             pred = row.get("prediction") or {}
             sid = row.get("sample_id")
+            expected = row.get("expected") or {}
+            if expected:
+                truth_set = _truth_set_from_failure_modes(expected.get("failure_modes"))
+                outcome_truth = expected.get("outcome") or ("failure" if truth_set else "success")
+            else:                                # fallback to metadata
+                truth_set = truth_by_id.get(sid, set())
+                outcome_truth = "failure" if truth_set else "success"
             records.append({
                 "model": row.get("model"),
                 "sample_id": sid,
-                "truth_set": truth_by_id.get(sid, set()),
+                "truth_set": truth_set,
                 "pred_set": _truth_set_from_failure_modes(pred.get("failure_modes")),
                 "confidence": pred.get("confidence"),
-                "outcome_truth": "failure" if truth_by_id.get(sid) else "success",
+                "outcome_truth": outcome_truth,
                 "outcome_pred": pred.get("outcome"),
                 "status": "completed" if row.get("success") else "parse_error",
                 "run_id": run_id,
@@ -295,7 +302,8 @@ def main(argv=None):
     src.add_argument("--csv", type=Path, help="flat per_sample_predictions.csv (legacy)")
     src.add_argument("--jsonl", type=Path, help="a single raw predictions.jsonl (legacy)")
     ap.add_argument("--metadata", type=Path,
-                    help="ground-truth metadata json (required with --runs-root or --jsonl)")
+                    help="optional ground-truth fallback json (truth normally comes "
+                         "from each run record's 'expected' field; required with --jsonl)")
     ap.add_argument("--outdir", type=Path,
                     help="output dir (default: runs/processed for --runs-root)")
     ap.add_argument("--keep-parse-errors", action="store_true")
@@ -304,8 +312,6 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     if args.runs_root:
-        if not args.metadata:
-            ap.error("--metadata is required with --runs-root")
         records, schema = read_runs_root(args.runs_root, args.metadata)
         if args.outdir is None:
             args.outdir = Path("runs/processed")
@@ -329,7 +335,7 @@ def main(argv=None):
     )
     args.outdir.mkdir(parents=True, exist_ok=True)
 
-    long.to_csv(args.outdir / "flags_long.csv", index=False)
+    long.to_csv(args.outdir / "detections_long.csv", index=False)
     pm = per_model_summary(long)
     pms = per_model_subtype_summary(long)
     prev = subtype_prevalence(long)
@@ -340,11 +346,11 @@ def main(argv=None):
     models = sorted(long["model"].unique())
     subtypes = list(prev["subtype"])
     lines = [
-        "# Flag-table summary (Stage 1)\n",
+        "# Detection-table summary (Stage 1)\n",
         f"- Schema detected: **{schema}**",
         f"- Models (M={len(models)}): {', '.join(models)}",
         f"- Subtypes (C={len(subtypes)}): {', '.join(subtypes)}",
-        f"- Items (I={long['sample_id'].nunique()}), flag cells (N={len(long)})",
+        f"- Items (I={long['sample_id'].nunique()}), detection cells (N={len(long)})",
         f"- Positive cells: {int(long['is_present'].sum())} | "
         f"negative cells: {int((1 - long['is_present']).sum())}",
         f"- Per-(model,sample) records: {n_total} total; "
@@ -357,9 +363,10 @@ def main(argv=None):
         "## Per-model recall / FPR (hard 0.5 flag)\n",
         pm[["model", "n_items", "hits", "false_alarms", "recall", "fpr", "mean_confidence"]].to_markdown(index=False),
         "",
-        "Feed `flags_long.csv` to `fit_sdt_irt.py` (Stage 2). Columns `is_present`",
-        "and `flagged` are the SDT positive/negative channels; `confidence` is",
-        "decision-level and carried for a future graded-response extension.",
+        "Feed `detections_long.csv` to `fit_sdt_irt.py` (Stage 2). Columns",
+        "`is_present` (ground truth) and `flagged` (model said present) are the SDT",
+        "positive/negative channels; `confidence` is decision-level, carried for a",
+        "future graded-response extension.",
     ]
     (args.outdir / "table_summary.md").write_text("\n".join(lines), encoding="utf-8")
     print(f"[schema] {schema}")

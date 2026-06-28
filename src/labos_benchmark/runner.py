@@ -6,8 +6,10 @@ Two modes, dispatched by prompt_type:
   * freetext_parser (p6): iterate a prior p2 run's outputs, fill the p6 prompt,
         send text to an LLM.
 
-Outputs go to runs/raw/{task}/{vlm}[/{llm}]/{run_id}/ with predictions.jsonl,
-metrics.jsonl, run_config.json and per-call artifacts. See docs/ARCHITECTURE.md.
+Outputs go to runs/raw/{run_id}/{task}/{vlm}[/{llm}]/ with predictions.jsonl,
+metrics.jsonl, run_config.json and per-call artifacts. The run_id (e.g. test_01,
+full_01) groups everything from one run; the datapoints to run come from a
+--data run_list.jsonl. See docs/ARCHITECTURE.md.
 
 NOTE: this is the scaffold wiring. The provider adapters and dataset/media
 helpers are borrowed from the previous codebase; the seams marked TODO are where
@@ -50,13 +52,15 @@ def load_config(
     return {"models": models, "defaults": defaults, "model_costs": costs}
 
 
-def _run_id() -> str:
+def default_run_id() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
-def _new_run_dir(task: str, *parts: str, runs_root: str | Path = "runs") -> Path:
-    rid = _run_id()
-    d = Path(runs_root) / "raw" / task / "/".join(safe_name(p) for p in parts) / rid
+def _new_run_dir(run_id: str, task: str, *parts: str, runs_root: str | Path = "runs") -> Path:
+    """runs/raw/{run_id}/{task}/{parts...}/ — run_id groups a whole run."""
+    d = Path(runs_root) / "raw" / safe_name(run_id) / task
+    for p in parts:
+        d = d / safe_name(p)
     (d / "artifacts").mkdir(parents=True, exist_ok=True)
     return d
 
@@ -82,18 +86,22 @@ def collect(
     model_name: str,
     config: dict,
     *,
-    limit: int | None = None,
+    run_id: str,
+    data_list: str | Path,
     camera_views: list[str] | None = None,
+    limit: int | None = None,
     concurrency: int = 1,
     runs_root: str | Path = "runs",
+    data_root: str | Path = "data",
 ) -> Path:
     """Collect one VLM's answers for a task: for each clip, one call with its angles.
 
-    A "sample" is one clip; ``select_videos`` returns its (up to 5) camera-angle
+    A DataPoint is one clip; ``resolve_videos`` returns its (up to 5) camera-angle
     videos, which are sent together in a single request -> one answer per clip.
-    Clips are processed with a thread pool of size ``concurrency``.
+    Clips come from ``data_list`` (a run_list.jsonl) and are processed with a
+    thread pool of size ``concurrency``.
     """
-    from .dataset import filter_samples, load_samples, select_videos
+    from .dataset import load_datapoints
     from .media import maybe_transcode_videos
 
     ptype = _prompts.prompt_type_of(task)
@@ -111,35 +119,35 @@ def collect(
     prompt_text = _prompts.load_prompt(task)  # protocol is baked into the .md
     parse_fn = _client.parse_first_json       # JSON for all tasks (p2 is still JSON-shaped)
 
-    meta_path = Path(defaults["dataset"]["metadata_path"])
-    samples = filter_samples(load_samples(meta_path), None)
+    points = load_datapoints(data_list)
     if limit:
-        samples = samples[:limit]
-    dataset_root = Path(read_json(meta_path)["dataset"]["local_root"])
+        points = points[:limit]
 
-    run_dir = _new_run_dir(task, model_name, runs_root=runs_root)
+    run_dir = _new_run_dir(run_id, task, model_name, runs_root=runs_root)
     atomic_write_json(run_dir / "run_config.json",
-                      {"task": task, "model": model_name, "model_cfg": model_cfg,
+                      {"run_id": run_id, "task": task, "model": model_name, "model_cfg": model_cfg,
+                       "data_list": str(data_list), "data_root": str(data_root),
                        "camera_views": cams, "concurrency": concurrency, "defaults": defaults})
 
     write_lock = threading.Lock()
 
-    def _process(sample) -> None:
-        videos = select_videos(sample, dataset_root, cams,
-                               int(media_cfg.get("max_videos_per_sample", 0)))
-        videos = maybe_transcode_videos(videos, run_dir / "media_cache" / sample.sample_id, media_cfg)
+    def _process(dp) -> None:
+        videos = dp.resolve_videos(data_root, cams or None)
+        videos = maybe_transcode_videos(videos, run_dir / "media_cache" / dp.sample_id, media_cfg)
         media = [{"type": "video", "path": str(v["path"])} for v in videos]  # TODO: contact-sheet mode
         result, ar = _client.call_with_retries(
             adapter, prompt=prompt_text, media=media,
-            request_metadata={"task": task, "model": model_name, "sample_id": sample.sample_id},
+            request_metadata={"task": task, "model": model_name,
+                              "sample_id": dp.sample_id, "index": dp.index},
             model_name=model_name, cost_entry=cost_entry,
             max_retries=int(call_cfg.get("max_retries", 5)), parse_fn=parse_fn,
         )
         with write_lock:
-            _write_record(run_dir, task, model_name, sample.sample_id, result, ar)
+            _write_record(run_dir, run_id, task, model_name, dp.sample_id, result, ar,
+                          expected=dp.expected)
 
-    _run_pool(_process, samples, concurrency)
-    print(f"[done] {task} / {model_name}: {len(samples)} clips -> {run_dir}")
+    _run_pool(_process, points, concurrency)
+    print(f"[done] {run_id} / {task} / {model_name}: {len(points)} clips -> {run_dir}")
     return run_dir
 
 
@@ -152,24 +160,31 @@ def run_parser(
     p2_run_dir: str | Path,
     config: dict,
     *,
+    run_id: str | None = None,
     concurrency: int = 1,
     runs_root: str | Path = "runs",
 ) -> Path:
-    """Fill the p6 prompt from each p2 prediction and call a text LLM."""
+    """Fill the p6 prompt from each p2 prediction and call a text LLM.
+
+    p2_run_dir is runs/raw/{run_id}/{op}_open_detection/{vlm}. The parser output
+    goes under the same run_id at {run_id}/{op}_freetext_parser/{vlm}/{llm}/.
+    """
     if _prompts.prompt_type_of(task) != "freetext_parser":
         raise ValueError(f"run_parser expects a *_freetext_parser task, got {task}")
 
     p2_run_dir = Path(p2_run_dir)
-    vlm_name = p2_run_dir.parent.name  # runs/raw/{op}_open_detection/{vlm}/{run_id}
+    vlm_name = p2_run_dir.name                 # {vlm}
+    if run_id is None:
+        run_id = p2_run_dir.parent.parent.name  # raw/{run_id}/{p2_task}/{vlm}
     model_cfg = dict(config["models"][llm_name])
     adapter = get_adapter(model_cfg["adapter"], model_cfg)
     cost_entry = config["model_costs"].get(model_cfg.get("provider_model_id"))
     call_cfg = config["defaults"].get("call", {})
     template = _prompts.load_prompt_file(_prompts.get_prompt_path(task))
 
-    run_dir = _new_run_dir(task, vlm_name, llm_name, runs_root=runs_root)
+    run_dir = _new_run_dir(run_id, task, vlm_name, llm_name, runs_root=runs_root)
     atomic_write_json(run_dir / "run_config.json",
-                      {"task": task, "vlm": vlm_name, "llm": llm_name,
+                      {"run_id": run_id, "task": task, "vlm": vlm_name, "llm": llm_name,
                        "p2_run_dir": str(p2_run_dir), "model_cfg": model_cfg})
 
     rows = [json.loads(ln) for ln in
@@ -192,33 +207,36 @@ def run_parser(
             max_retries=int(call_cfg.get("max_retries", 5)), parse_fn=_client.parse_first_json,
         )
         with write_lock:
-            _write_record(run_dir, task, llm_name, row.get("sample_id"), result, ar,
-                          extra={"source_vlm": vlm_name})
+            _write_record(run_dir, run_id, task, llm_name, row.get("sample_id"), result, ar,
+                          expected=row.get("expected"), extra={"source_vlm": vlm_name})
 
     _run_pool(_process, rows, concurrency)
-    print(f"[done] {task}: parsed {p2_run_dir} with {llm_name} ({len(rows)} rows) -> {run_dir}")
+    print(f"[done] {run_id} / {task}: parsed {p2_run_dir} with {llm_name} ({len(rows)} rows) -> {run_dir}")
     return run_dir
 
 
 # --------------------------------------------------------------------------- #
 # Shared record writer
 # --------------------------------------------------------------------------- #
-def _write_record(run_dir: Path, task: str, model_name: str, sample_id: str,
-                  result: _client.CallResult, ar, extra: dict | None = None) -> None:
+def _write_record(run_dir: Path, run_id: str, task: str, model_name: str, sample_id: str,
+                  result: _client.CallResult, ar, *, expected: dict | None = None,
+                  extra: dict | None = None) -> None:
     runtime = ar.latency_s if ar is not None else 0.0
-    metrics = _client.CallMetrics.build(result, model=model_name, run_id=run_dir.name,
+    metrics = _client.CallMetrics.build(result, model=model_name, run_id=run_id,
                                         runtime_s=runtime or 0.0)
-    rid = safe_name(f"{model_name}__{sample_id}")
+    artifact_id = safe_name(f"{model_name}__{sample_id}")
     if ar is not None:
-        atomic_write_json(run_dir / "artifacts" / f"{rid}.json",
+        atomic_write_json(run_dir / "artifacts" / f"{artifact_id}.json",
                           {"raw_text": ar.raw_text, "usage": ar.usage,
                            "finish_reason": ar.finish_reason})
     record = {
-        "task": task, "model": model_name, "sample_id": sample_id,
+        "run_id": run_id, "task": task, "model": model_name, "sample_id": sample_id,
         "prediction": result.output if result.success else None,
         "success": result.success,
         "raw_output": result.raw_outputs_per_try[-1] if result.raw_outputs_per_try else None,
     }
+    if expected is not None:
+        record["expected"] = expected
     if extra:
         record.update(extra)
     append_jsonl(run_dir / "predictions.jsonl", record)

@@ -57,25 +57,22 @@ log-likelihood and select between M1 and M2 by WAIC (lower is better).
 Two-stage pipeline
 ------------------
 Stage 1 (``build_flag_table.py``) digests the raw runs -- single-choice,
-multi-label P3, or P6-parsed P2 -- into one tidy ``flags_long.csv`` (one row per
-model x sample x subtype, with ``is_present`` / ``flagged``). Stage 2 (this
-script) fits M1/M2 directly from that table via ``--flags``. The legacy
+multi-label P3, or P6-parsed P2 -- into one tidy ``detections_long.csv`` (one row
+per model x task x sample x subtype, with ``is_present`` / ``flagged``). Stage 2
+(this script) fits M1/M2 directly from that table via ``--table``. The legacy
 ``--input`` path (raw single-choice ``per_sample_predictions.csv``) is kept for
-back-compat, but ``--flags`` is preferred and is the only path that supports
+back-compat, but ``--table`` is preferred and is the only path that supports
 multi-error items.
 
 Usage
 -----
-    # Stage 1: raw runs -> flag table
-    python build_flag_table.py \
-        --jsonl runs/<run>/predictions.jsonl \
-        --metadata metadata/real_human_samples_no_multiple.json \
-        --outdir out_sdt_irt
+    # Stage 1: raw runs -> detection table
+    python build_flag_table.py --runs-root runs --outdir runs/processed
 
     # Stage 2: fit M1/M2 from the table
     python fit_sdt_irt.py \
-        --flags out_sdt_irt/flags_long.csv \
-        --outdir out_sdt_irt \
+        --table runs/processed/detections_long.csv \
+        --outdir results/<analysis_label> \
         --draws 1000 --tune 1000 --chains 2
 
 Outputs (written to --outdir):
@@ -188,7 +185,7 @@ def load_flag_tensor(csv_path: Path, keep_parse_errors: bool = False):
 
 
 def load_flag_tensor_from_table(flags_csv: Path, keep_parse_errors: bool = False):
-    """Return the flag tensor built directly from Stage-1 ``flags_long.csv``.
+    """Return the flag tensor built directly from Stage-1 ``detections_long.csv``.
 
     This is the canonical Stage 2 input: ``build_flag_table.py`` already turned
     the raw runs (single-choice OR multi-label OR p6-parsed p2) into one tidy row
@@ -424,11 +421,11 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     src = ap.add_mutually_exclusive_group(required=True)
-    src.add_argument("--flags", type=Path,
-                     help="flags_long.csv from build_flag_table.py (Stage 1). Preferred input.")
+    src.add_argument("--table", type=Path,
+                     help="detections_long.csv from build_flag_table.py (Stage 1). Preferred input.")
     src.add_argument("--input", type=Path,
                      help="legacy: raw per_sample_predictions.csv (single-choice). "
-                          "Prefer --flags for the multi-label / p6 pipeline.")
+                          "Prefer --table for the multi-label / p6 pipeline.")
     ap.add_argument("--outdir", required=True, type=Path)
     ap.add_argument("--draws", type=int, default=1000)
     ap.add_argument("--tune", type=int, default=1000)
@@ -444,9 +441,9 @@ def main(argv=None):
     import arviz as az
 
     args.outdir.mkdir(parents=True, exist_ok=True)
-    if args.flags:
-        data = load_flag_tensor_from_table(args.flags, keep_parse_errors=args.keep_parse_errors)
-        input_desc = f"{args.flags} (flag table)"
+    if args.table:
+        data = load_flag_tensor_from_table(args.table, keep_parse_errors=args.keep_parse_errors)
+        input_desc = f"{args.table} (detection table)"
     else:
         data = load_flag_tensor(args.input, keep_parse_errors=args.keep_parse_errors)
         input_desc = f"{args.input} (raw single-choice CSV)"

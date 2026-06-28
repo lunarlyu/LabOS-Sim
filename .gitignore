@@ -1,7 +1,12 @@
-# Data & generated artifacts
-data/
+# Data: ignore everything under data/ EXCEPT the small catalogs/run-lists.
+# (Re-include directories first so the file negations can take effect.)
+data/**
+!data/**/
+!data/**/metadata.jsonl
+!data/**/*run_list*.jsonl
+
+# Generated run artifacts
 runs/
-!runs/README.md
 
 # Secrets
 .env
