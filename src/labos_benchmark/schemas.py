@@ -1,8 +1,8 @@
 """Output schemas, keyed by prompt_type.
 
-These describe the JSON each prompt is expected to return. P1/P3 are structured
-(usable as an OpenAI-style ``response_format`` where the provider supports it);
-P2 is freeform (its output is later mapped by P6); P6 is the parser's schema.
+These describe the JSON each prompt is expected to return. P1/P2 emit the
+standard scoring schema directly; P3/P4 emit structured free-text fields that
+are mapped by P5/P6 parser prompts.
 Taxonomy matches prompts/PROMPT_CATALOG.md — ``repeated_steps`` removed.
 """
 from __future__ import annotations
@@ -48,7 +48,7 @@ CLOSED_BINARY_SCHEMA = {
     "additionalProperties": False,
 }
 
-# --- p3: multi-label classification -----------------------------------------
+# --- p2: multi-label classification -----------------------------------------
 MULTILABEL_SCHEMA = {
     "type": "object",
     "properties": {
@@ -59,7 +59,7 @@ MULTILABEL_SCHEMA = {
         "reasoning": {"type": "string"},
         "additional_failures": _ADDITIONAL_FAILURES,
     },
-    "required": ["outcome", "failure_modes", "confidence", "reasoning"],
+    "required": ["outcome", "failure_modes", "confidence", "reasoning", "additional_failures"],
     "additionalProperties": False,
 }
 
@@ -113,7 +113,14 @@ PARSER_SCHEMA = {
             },
         },
     },
-    "required": ["outcome", "failure_modes", "confidence", "reasoning"],
+    "required": [
+        "outcome",
+        "failure_modes",
+        "confidence",
+        "reasoning",
+        "additional_failures",
+        "ambiguous_mentions",
+    ],
     "additionalProperties": False,
 }
 

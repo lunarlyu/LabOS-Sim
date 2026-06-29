@@ -171,18 +171,24 @@ def call_with_retries(
     cost_entry: dict | None = None,
     max_retries: int = 5,
     parse_fn: Callable[[str], Any] | None = parse_first_json,
+    response_format: dict[str, Any] | None = None,
 ) -> tuple[CallResult, AdapterResult | None]:
     """Call an adapter with retries, accumulating cost into a CallResult.
 
     ``parse_fn`` turns raw text into structured output; success = non-None parse.
-    Pass ``parse_fn=None`` to accept raw text (e.g. p2 freeform you parse later).
+    Pass ``parse_fn=None`` to accept raw text.
     Returns (CallResult, last AdapterResult).
     """
     result = CallResult.blank()
     last: AdapterResult | None = None
     for attempt in range(max_retries + 1):
         try:
-            ar = adapter.generate(prompt=prompt, media=media, request_metadata=request_metadata)
+            ar = adapter.generate(
+                prompt=prompt,
+                media=media,
+                request_metadata=request_metadata,
+                response_format=response_format,
+            )
             last = ar
             cost, source = compute_cost(ar.usage, cost_entry)
             in_tok, out_tok = _tokens(ar.usage or {})

@@ -43,5 +43,6 @@ class BaseVLMAdapter:
         prompt: str,
         media: list[dict[str, Any]],
         request_metadata: dict[str, Any],
+        response_format: dict[str, Any] | None = None,
     ) -> AdapterResult:
         raise NotImplementedError

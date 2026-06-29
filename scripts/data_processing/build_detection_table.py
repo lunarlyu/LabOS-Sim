@@ -160,8 +160,9 @@ def read_runs_root(runs_root: Path, metadata: Path | None = None) -> tuple[list[
             else:                                # fallback to metadata
                 truth_set = truth_by_id.get(sid, set())
                 outcome_truth = "failure" if truth_set else "success"
+            scoring_model = row.get("source_vlm") if task.endswith("_parser") else row.get("model")
             records.append({
-                "model": row.get("model"),
+                "model": scoring_model or row.get("model"),
                 "sample_id": sid,
                 "truth_set": truth_set,
                 "pred_set": _truth_set_from_failure_modes(pred.get("failure_modes")),
@@ -171,6 +172,7 @@ def read_runs_root(runs_root: Path, metadata: Path | None = None) -> tuple[list[
                 "status": "completed" if row.get("success") else "parse_error",
                 "run_id": run_id,
                 "task": task,
+                "parser_llm": row.get("parser_llm") or (row.get("model") if task.endswith("_parser") else None),
             })
     return records, "failure_mode_classification"
 
@@ -255,6 +257,7 @@ def build_long_table(
                 "outcome_truth": r["outcome_truth"],
                 "outcome_pred": r["outcome_pred"],
                 "status": r["status"],
+                "parser_llm": r.get("parser_llm"),
             })
     return pd.DataFrame(rows)
 

@@ -28,12 +28,14 @@ class GeminiAdapter(BaseVLMAdapter):
         prompt: str,
         media: list[dict[str, Any]],
         request_metadata: dict[str, Any],
+        response_format: dict[str, Any] | None = None,
     ) -> AdapterResult:
         if self.api_style == "openai_compatible":
             return self._openai_compatible.generate(
                 prompt=prompt,
                 media=media,
                 request_metadata=request_metadata,
+                response_format=response_format,
             )
 
         from google import genai
@@ -61,9 +63,16 @@ class GeminiAdapter(BaseVLMAdapter):
         contents.append(prompt)
 
         config_args: dict[str, Any] = {}
-        for key, target in (("temperature", "temperature"), ("max_tokens", "max_output_tokens")):
+        for key, target in (
+            ("temperature", "temperature"),
+            ("max_tokens", "max_output_tokens"),
+            ("max_completion_tokens", "max_output_tokens"),
+        ):
             if self.model_config.get(key) is not None:
                 config_args[target] = self.model_config[key]
+        if response_format is not None:
+            config_args["response_mime_type"] = "application/json"
+            config_args["response_schema"] = response_format["json_schema"]["schema"]
         if self.model_config.get("thinking_budget") is not None:
             config_args["thinking_config"] = types.ThinkingConfig(
                 thinking_budget=int(self.model_config["thinking_budget"])

@@ -73,6 +73,7 @@ class OpenAICompatibleAdapter(BaseVLMAdapter):
         prompt: str,
         media: list[dict[str, Any]],
         request_metadata: dict[str, Any],
+        response_format: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         content = [self._media_block(item) for item in media]
         content.append({"type": "text", "text": prompt})
@@ -91,6 +92,8 @@ class OpenAICompatibleAdapter(BaseVLMAdapter):
         for key in ("temperature", "top_p", "max_tokens", "max_completion_tokens", "seed"):
             if key in self.model_config and self.model_config[key] is not None:
                 payload[key] = self.model_config[key]
+        if response_format is not None:
+            payload["response_format"] = response_format
         if self.model_config.get("extra_body"):
             payload.update(self.model_config["extra_body"])
         return payload
@@ -101,8 +104,14 @@ class OpenAICompatibleAdapter(BaseVLMAdapter):
         prompt: str,
         media: list[dict[str, Any]],
         request_metadata: dict[str, Any],
+        response_format: dict[str, Any] | None = None,
     ) -> AdapterResult:
-        payload = self.build_payload(prompt=prompt, media=media, request_metadata=request_metadata)
+        payload = self.build_payload(
+            prompt=prompt,
+            media=media,
+            request_metadata=request_metadata,
+            response_format=response_format,
+        )
         url = self.base_url.rstrip("/") + "/chat/completions"
         start = time.perf_counter()
         response = requests.post(url, headers=self._headers(), data=json.dumps(payload), timeout=self.timeout)
