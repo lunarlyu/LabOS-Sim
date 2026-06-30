@@ -3,7 +3,7 @@
 # (Which datapoints to run comes from --data run_list.jsonl, not from here.)
 
 media:
-  input_type: video            # video | image_contact_sheet
+  input_type: image_contact_sheet  # video | image_contact_sheet
   camera_views: []             # [] = all angles (override per run with --camera-views)
   max_videos_per_sample: 0     # 0 = all
   fairness_profile: canonical_clip_1080px_30fps

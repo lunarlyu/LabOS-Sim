@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import mimetypes
 import os
 import time
 from typing import Any
@@ -47,19 +48,24 @@ class GeminiAdapter(BaseVLMAdapter):
         client = genai.Client(api_key=api_key)
         contents: list[Any] = []
         for item in media:
-            if item["type"] != "video":
-                raise ValueError("Gemini native adapter expects standardized video media.")
+            if item["type"] not in {"image", "video"}:
+                raise ValueError(f"Unsupported Gemini media type: {item['type']}")
             uploaded = client.files.upload(file=item["path"])
             while True:
                 uploaded = client.files.get(name=uploaded.name)
                 if uploaded.state == "ACTIVE":
                     break
                 time.sleep(2)
-            video_part = types.Part.from_uri(file_uri=uploaded.uri, mime_type="video/mp4")
+            mime_type = mimetypes.guess_type(item["path"])[0]
+            if item["type"] == "video":
+                mime_type = mime_type or "video/mp4"
+            else:
+                mime_type = mime_type or "image/jpeg"
+            part = types.Part.from_uri(file_uri=uploaded.uri, mime_type=mime_type)
             fps = self.model_config.get("fps")
-            if fps:
-                video_part.video_metadata = types.VideoMetadata(fps=float(fps))
-            contents.append(video_part)
+            if item["type"] == "video" and fps:
+                part.video_metadata = types.VideoMetadata(fps=float(fps))
+            contents.append(part)
         contents.append(prompt)
 
         config_args: dict[str, Any] = {}
@@ -79,7 +85,7 @@ class GeminiAdapter(BaseVLMAdapter):
             )
         start = time.perf_counter()
         response = client.models.generate_content(
-            model=self.model_id,
+            model=self.model_id or self.provider_model_id,
             contents=contents,
             config=types.GenerateContentConfig(**config_args),
         )
