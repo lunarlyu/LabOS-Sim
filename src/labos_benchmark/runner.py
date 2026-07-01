@@ -29,7 +29,7 @@ from . import client as _client
 from . import prompts as _prompts
 from . import schemas as _schemas
 from .adapters import get_adapter
-from .io_utils import append_jsonl, atomic_write_json, safe_name
+from .io_utils import append_jsonl, atomic_write_json, safe_name, setup_keys
 
 
 # --------------------------------------------------------------------------- #
@@ -46,6 +46,7 @@ def load_config(
     defaults_path: str | Path = "config/defaults.yaml",
     costs_path: str | Path = "config/model_costs.json",
 ) -> dict:
+    setup_keys()  # load API keys from _env.json into os.environ (no-op if absent)
     models = _load_yaml(models_path).get("models", {})
     defaults = _load_yaml(defaults_path)
     costs = _client.load_model_costs(costs_path)
