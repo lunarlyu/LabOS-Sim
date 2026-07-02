@@ -119,7 +119,9 @@ def read_jsonl_run(jsonl: Path, metadata: Path) -> tuple[list[dict], str]:
     return records, schema or "single_choice_multiclass"
 
 
-def read_runs_root(runs_root: Path, metadata: Path | None = None) -> tuple[list[dict], str]:
+def read_runs_root(runs_root: Path, metadata: Path | None = None,
+                   include_run_ids: set[str] | None = None,
+                   exclude_run_ids: set[str] | None = None) -> tuple[list[dict], str]:
     """Glob runs/raw/**/predictions.jsonl (the run_id-first layout) into records.
 
     Layout: runs/raw/{run_id}/{task}/{vlm}[/{llm}]/predictions.jsonl. Each record
@@ -127,6 +129,10 @@ def read_runs_root(runs_root: Path, metadata: Path | None = None) -> tuple[list[
     failure_modes, confidence,...}, success, expected:{outcome, failure_modes}}.
     Ground truth is read from each record's ``expected`` field (no metadata
     needed); ``--metadata`` is an optional fallback for older runs.
+
+    ``include_run_ids`` (allowlist) and ``exclude_run_ids`` (denylist) filter by
+    the leading run_id path segment, so e.g. smoke-test runs never contaminate a
+    production table. include wins: if set, only those run_ids are read.
     """
     truth_by_id: dict[str, set] = {}
     if metadata is not None:
@@ -141,6 +147,10 @@ def read_runs_root(runs_root: Path, metadata: Path | None = None) -> tuple[list[
         rel = pj.relative_to(raw)               # {run_id}/{task}/{vlm}[/{llm}]/predictions.jsonl
         run_id = rel.parts[0]
         task = rel.parts[1] if len(rel.parts) > 1 else ""
+        if include_run_ids is not None and run_id not in include_run_ids:
+            continue
+        if exclude_run_ids and run_id in exclude_run_ids:
+            continue
         for line in pj.read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
@@ -313,6 +323,12 @@ def main(argv=None):
     ap.add_argument("--metadata", type=Path,
                     help="optional ground-truth fallback json (truth normally comes "
                          "from each run record's 'expected' field; required with --jsonl)")
+    ap.add_argument("--run-ids", nargs="+", default=None,
+                    help="allowlist: only process these run_ids (the leading path segment "
+                         "under runs/raw/). Use to select a production run and exclude smoke.")
+    ap.add_argument("--exclude-run-ids", nargs="+", default=None,
+                    help="denylist: skip these run_ids (e.g. 'smoke'). Ignored for run_ids "
+                         "already selected by --run-ids.")
     ap.add_argument("--outdir", type=Path,
                     help="output dir (default: runs/processed for --runs-root)")
     ap.add_argument("--keep-parse-errors", action="store_true")
@@ -321,7 +337,11 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     if args.runs_root:
-        records, schema = read_runs_root(args.runs_root, args.metadata)
+        records, schema = read_runs_root(
+            args.runs_root, args.metadata,
+            include_run_ids=set(args.run_ids) if args.run_ids else None,
+            exclude_run_ids=set(args.exclude_run_ids) if args.exclude_run_ids else None,
+        )
         if args.outdir is None:
             args.outdir = Path("runs/processed")
     elif args.jsonl:

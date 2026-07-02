@@ -5,8 +5,9 @@ data/**
 !data/**/metadata.jsonl
 !data/**/*run_list*.jsonl
 
-# Generated run artifacts
-runs/
+# Generated run artifacts (raw predictions + media caches; keep runs/processed/ trackable)
+runs/raw/
+runs/.media_cache/
 
 # Secrets
 .env

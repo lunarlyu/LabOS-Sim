@@ -7,9 +7,11 @@ Two modes, dispatched by prompt_type:
         prompt, send text to an LLM.
 
 Outputs go to runs/raw/{run_id}/{task}/{vlm}[/{llm}]/ with predictions.jsonl,
-metrics.jsonl, run_config.json and per-call artifacts. The run_id (e.g. test_01,
-full_01) groups everything from one run; the datapoints to run come from a
---data run_list.jsonl. See docs/ARCHITECTURE.md.
+metrics.jsonl and run_config.json (raw provider text + finish_reason live inline
+in predictions.jsonl). Preprocessed media is content-addressed in a shared
+runs/.media_cache/ so re-runs reuse transcodes instead of redoing ffmpeg. The
+run_id (e.g. test_01, full_01) groups everything from one run; the datapoints to
+run come from a --data run_list.jsonl. See docs/ARCHITECTURE.md.
 
 NOTE: this is the scaffold wiring. The provider adapters and dataset/media
 helpers are borrowed from the previous codebase; the seams marked TODO are where
@@ -84,7 +86,7 @@ def _new_run_dir(run_id: str, task: str, *parts: str, runs_root: str | Path = "r
     d = Path(runs_root) / "raw" / safe_name(run_id) / task
     for p in parts:
         d = d / safe_name(p)
-    (d / "artifacts").mkdir(parents=True, exist_ok=True)
+    d.mkdir(parents=True, exist_ok=True)
     return d
 
 
@@ -162,7 +164,7 @@ def collect(
         videos = dp.resolve_videos(data_root, cams or None)
         if max_videos > 0:
             videos = videos[:max_videos]
-        videos = maybe_transcode_videos(videos, run_dir / "media_cache" / dp.sample_id, media_cfg)
+        videos = maybe_transcode_videos(videos, Path(runs_root) / ".media_cache", media_cfg)
         media_type = "image" if media_cfg.get("input_type") == "image_contact_sheet" else "video"
         media = [{"type": media_type, "path": str(v["path"])} for v in videos]
         result, ar = _client.call_with_retries(
@@ -260,15 +262,11 @@ def _write_record(run_dir: Path, run_id: str, task: str, model_name: str, sample
     runtime = ar.latency_s if ar is not None else 0.0
     metrics = _client.CallMetrics.build(result, model=metrics_model or model_name, run_id=run_id,
                                         runtime_s=runtime or 0.0)
-    artifact_id = safe_name(f"{model_name}__{sample_id}")
-    if ar is not None:
-        atomic_write_json(run_dir / "artifacts" / f"{artifact_id}.json",
-                          {"raw_text": ar.raw_text, "usage": ar.usage,
-                           "finish_reason": ar.finish_reason})
     record = {
         "run_id": run_id, "task": task, "model": model_name, "sample_id": sample_id,
         "prediction": result.output if result.success else None,
         "success": result.success,
+        "finish_reason": ar.finish_reason if ar is not None else None,
         "raw_output": result.raw_outputs_per_try[-1] if result.raw_outputs_per_try else None,
     }
     if expected is not None:
