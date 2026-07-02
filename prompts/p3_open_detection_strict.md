@@ -26,12 +26,13 @@ Instructions:
 - `observed_errors` must be `"None"` if and only if `outcome` is `success`;
   it must list at least one error whenever `outcome` is `failure`.
 
-Return exactly one JSON object:
+Return exactly one JSON object with these fields. Replace every value below with
+your own — do not copy the placeholder text:
 
 {
-  "outcome": "success",
-  "observed_errors": "None",
-  "confidence": 0.0
+  "outcome": "success" or "failure",
+  "observed_errors": "<comma-separated short noun phrases of the distinct errors you observe; 'None' iff success>",
+  "confidence": <number 0.0-1.0: your certainty in the outcome, not a fixed value>
 }
 
 Note: this prompt gives no error taxonomy on purpose; its output is mapped to the

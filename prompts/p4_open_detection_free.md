@@ -24,10 +24,11 @@ Instructions:
 - Set `outcome` to `success` if, from what you describe, the operator followed
   the protocol; otherwise `failure`.
 
-Return exactly one JSON object:
+Return exactly one JSON object with these fields. Replace every value below with
+your own — do not copy the placeholder text:
 
 {
-  "outcome": "success",
-  "description": "A chronological account of what happens with the target tube.",
-  "confidence": 0.0
+  "outcome": "success" or "failure",
+  "description": "<your own chronological account of what happens with the target tube>",
+  "confidence": <number 0.0-1.0: your certainty in the outcome, not a fixed value>
 }

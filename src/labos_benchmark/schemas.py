@@ -4,6 +4,11 @@ These describe the JSON each prompt is expected to return. P1/P2 emit the
 standard scoring schema directly; P3/P4 emit structured free-text fields that
 are mapped by P5/P6 parser prompts.
 Taxonomy matches prompts/PROMPT_CATALOG.md — ``repeated_steps`` removed.
+
+Note: ``confidence`` carries no numeric ``minimum``/``maximum`` — Anthropic's
+structured-output validator (via OpenRouter) rejects those keywords on ``number``
+types with a 400. The 0.0-1.0 range is instead stated in each prompt; clamp
+downstream if a stray out-of-range value ever appears.
 """
 from __future__ import annotations
 
@@ -41,7 +46,7 @@ CLOSED_BINARY_SCHEMA = {
         "outcome": {"type": "string", "enum": ["success", "failure"]},
         "failure_modes": {"type": "array", "items": {"type": "string"},
                           "description": "Always empty for this prompt."},
-        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "confidence": {"type": "number"},
         "reasoning": {"type": "string"},
     },
     "required": ["outcome", "failure_modes", "confidence", "reasoning"],
@@ -55,7 +60,7 @@ MULTILABEL_SCHEMA = {
         "outcome": {"type": "string", "enum": ["success", "failure"]},
         "failure_modes": {"type": "array", "items": {"type": "string", "enum": FAILURE_LABELS},
                           "description": "Empty iff success; ordered most-important first."},
-        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "confidence": {"type": "number"},
         "reasoning": {"type": "string"},
         "additional_failures": _ADDITIONAL_FAILURES,
     },
@@ -70,7 +75,7 @@ OPEN_DETECTION_STRICT_SCHEMA = {
         "outcome": {"type": "string", "enum": ["success", "failure"]},
         "observed_errors": {"type": "string",
                             "description": "Comma-separated errors; 'None' iff outcome is success."},
-        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "confidence": {"type": "number"},
     },
     "required": ["outcome", "observed_errors", "confidence"],
     "additionalProperties": False,
@@ -83,7 +88,7 @@ OPEN_DETECTION_FREE_SCHEMA = {
         "outcome": {"type": "string", "enum": ["success", "failure"]},
         "description": {"type": "string",
                         "description": "Free-text account of the video; always present."},
-        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "confidence": {"type": "number"},
     },
     "required": ["outcome", "description", "confidence"],
     "additionalProperties": False,
@@ -95,7 +100,7 @@ PARSER_SCHEMA = {
     "properties": {
         "outcome": {"type": "string", "enum": ["success", "failure", "ambiguous"]},
         "failure_modes": {"type": "array", "items": {"type": "string", "enum": FAILURE_LABELS}},
-        "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1,
+        "confidence": {"type": ["number", "null"],
                        "description": "null when the source model gave none."},
         "reasoning": {"type": "string"},
         "additional_failures": _ADDITIONAL_FAILURES,

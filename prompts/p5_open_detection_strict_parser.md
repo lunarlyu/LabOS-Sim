@@ -68,19 +68,16 @@ matches the definition:
 
 ## Output
 
-Return exactly one JSON object — the four standard fields, then diagnostics:
+Return exactly one JSON object — the four standard fields, then diagnostics.
+Replace every value below with your own — do not copy the placeholder text:
 
 {
-  "outcome": "success",
-  "failure_modes": [],
-  "confidence": 0.0,
-  "reasoning": "One line on how the text was mapped.",
-  "additional_failures": [
-    { "description": "", "evidence": "" }
-  ],
-  "ambiguous_mentions": [
-    { "text": "", "candidate_modes": [], "why": "" }
-  ]
+  "outcome": "success", "failure" or "ambiguous",
+  "failure_modes": [<canonical subtypes the text supports, most important first; empty iff success>],
+  "confidence": <the source confidence carried through unchanged, or null if the source gave none>,
+  "reasoning": "<one sentence on how you mapped the text to the schema>",
+  "additional_failures": [<one { "description": "...", "evidence": "..." } iff other_failure is in failure_modes; empty [] otherwise>],
+  "ambiguous_mentions": [<one { "text": "...", "candidate_modes": [...], "why": "..." } per hedged/unclassifiable mention; empty [] otherwise>]
 }
 
 Rules of thumb: be faithful, not creative. When the text genuinely does not say,

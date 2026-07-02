@@ -20,11 +20,12 @@ Set `outcome` to `success` only if every step of the protocol is completed for
 the target tube; otherwise `failure`.
 `failure_modes` is always empty for this prompt (it does not classify subtypes).
 
-Return exactly one JSON object:
+Return exactly one JSON object with these fields. Replace every value below with
+your own — do not copy the placeholder text:
 
 {
-  "outcome": "success",
+  "outcome": "success" or "failure",
   "failure_modes": [],
-  "confidence": 0.0,
-  "reasoning": "Brief visual evidence."
+  "confidence": <number 0.0-1.0: your certainty in the outcome, not a fixed value>,
+  "reasoning": "<one or two sentences citing the specific visual evidence for your decision>"
 }

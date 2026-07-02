@@ -40,14 +40,13 @@ Instructions:
   `additional_failures` must be non-empty if and only if `other_failure` is in `failure_modes`; if `other_failure` is not in `failure_modes`, leave
   `additional_failures` empty (`[]`).
 
-Return exactly one JSON object:
+Return exactly one JSON object with these fields. Replace every value below with
+your own — do not copy the placeholder text:
 
 {
-  "outcome": "success",
-  "failure_modes": [],
-  "confidence": 0.0,
-  "reasoning": "Brief visual evidence for each call.",
-  "additional_failures": [
-    { "description": "", "evidence": "" }
-  ]
+  "outcome": "success" or "failure",
+  "failure_modes": [<zero or more subtypes from the list above, most important first; empty iff success>],
+  "confidence": <number 0.0-1.0: your certainty in the outcome, not a fixed value>,
+  "reasoning": "<one or two sentences citing the specific visual evidence for each failure mode you list>",
+  "additional_failures": [<one { "description": "...", "evidence": "..." } per other_failure; empty [] otherwise>]
 }
