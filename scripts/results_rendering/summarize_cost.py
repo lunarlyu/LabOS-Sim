@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Aggregate per-call cost across all runs.
+"""Aggregate per-call cost across all or selected runs.
 
 Reads every runs/raw/**/metrics.jsonl, writes:
   runs/processed/cost_long.csv     one row per call (with task, model, run_id)
-  runs/processed/cost_summary.csv  totals per (task, model)
+  runs/processed/cost_summary.csv  totals per (run_id, task, model)
 """
 from __future__ import annotations
 
@@ -18,13 +18,20 @@ def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--runs-root", default="runs")
     ap.add_argument("--outdir", default="runs/processed")
+    ap.add_argument(
+        "--run-id", action="append", dest="run_ids",
+        help="include only this run ID; repeatable (default: all run IDs)",
+    )
     args = ap.parse_args(argv)
 
     raw = Path(args.runs_root) / "raw"
+    selected_run_ids = set(args.run_ids or [])
     rows = []
     for mp in raw.glob("**/metrics.jsonl"):
         rel = mp.relative_to(raw)            # {run_id}/{task}/{vlm}[/{llm}]/metrics.jsonl
         run_id = rel.parts[0]
+        if selected_run_ids and run_id not in selected_run_ids:
+            continue
         task = rel.parts[1] if len(rel.parts) > 1 else ""
         for line in mp.read_text(encoding="utf-8").splitlines():
             if not line.strip():
@@ -35,7 +42,8 @@ def main(argv=None) -> None:
             rows.append(d)
 
     if not rows:
-        print(f"[cost] no metrics.jsonl found under {raw}")
+        scope = f" for run IDs {sorted(selected_run_ids)}" if selected_run_ids else ""
+        print(f"[cost] no metrics.jsonl found under {raw}{scope}")
         return
 
     df = pd.DataFrame(rows)
@@ -44,7 +52,7 @@ def main(argv=None) -> None:
     df.to_csv(outdir / "cost_long.csv", index=False)
 
     summ = (
-        df.groupby(["task", "model"])
+        df.groupby(["run_id", "task", "model"])
         .agg(calls=("cost", "size"), total_cost_usd=("cost", "sum"),
              input_tokens=("input_tokens", "sum"), output_tokens=("output_tokens", "sum"))
         .reset_index()

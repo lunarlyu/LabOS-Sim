@@ -95,9 +95,20 @@ def config_for(base: dict, condition: dict) -> dict:
         "max_width": condition["resolution"],
         "quality": 10,
     })
-    # Pin model-level settings because they take precedence over call defaults.
-    cfg["models"][MODEL]["temperature"] = 0
-    cfg["models"][MODEL]["max_completion_tokens"] = condition["tokens"]
+    # Pin the experiment transport independently of the shared full-run model
+    # registry. Historical design runs used Gemini through OpenRouter; keeping
+    # these fields local prevents unrelated registry edits from changing the
+    # provider midway through a resumable run.
+    cfg["models"][MODEL].update({
+        "adapter": "gemini",
+        "provider_model_id": "google/gemini-3.1-pro-preview",
+        "api_style": "openai_compatible",
+        "base_url_env": "OPENROUTER_BASE_URL",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "media_transport": "data_uri",
+        "temperature": 0,
+        "max_completion_tokens": condition["tokens"],
+    })
     return cfg
 
 
@@ -119,11 +130,7 @@ def process_metrics(run_id: str, runs_root: Path, results_root: Path) -> None:
 def require_complete(run_dir: Path, expected: int) -> None:
     """Stop the experiment before metrics if any sample is still unsuccessful."""
     predictions = run_dir / "predictions.jsonl"
-    rows = runner._latest_rows(predictions)
-    completed = {
-        sample_id for sample_id, row in rows.items()
-        if row.get("success") is True and row.get("prediction") is not None
-    }
+    completed = runner.successful_sample_ids(predictions)
     if len(completed) != expected:
         missing = expected - len(completed)
         raise SystemExit(
@@ -168,6 +175,7 @@ def main() -> None:
     base = runner.load_config()
     if MODEL not in base["models"]:
         raise SystemExit(f"model not found in config/models.yaml: {MODEL}")
+    completed_run_ids = []
     for name in names:
         run_id = f"{stamp}_{name}"
         condition = CONDITIONS[name]
@@ -192,11 +200,16 @@ def main() -> None:
         )
         require_complete(parser_run_dir, expected_run_samples)
         process_metrics(run_id, runs_root, results_root)
+        completed_run_ids.append(run_id)
 
-    subprocess.run([
+    cost_cmd = [
         sys.executable, "scripts/results_rendering/summarize_cost.py",
-        "--runs-root", str(runs_root), "--outdir", str(runs_root / "processed/costs"),
-    ], cwd=REPO_ROOT, check=True)
+        "--runs-root", str(runs_root),
+        "--outdir", str(results_root / f"{stamp}_costs"),
+    ]
+    for run_id in completed_run_ids:
+        cost_cmd.extend(["--run-id", run_id])
+    subprocess.run(cost_cmd, cwd=REPO_ROOT, check=True)
     print(f"raw: {runs_root / 'raw'}")
     print(f"metrics: {results_root}")
 

@@ -55,7 +55,7 @@ that limit.
 |---|---:|---:|---:|---:|---:|
 | Fixed 128 | **27.5%** | **50.0%** | **30.0%** | **18.8%** | **$409.44** |
 | Fixed 256 | 23.8% | 47.9% | 18.8% | 17.5% | $770.29 |
-| Adaptive 256 | 22.5% | 47.1% | 21.3% | In progress | In progress |
+| Adaptive 256 | 22.5% | 47.1% | 21.3% | 13.8% | $690.29 |
 
 ### 4.1 Fixed 256 and duplicated frames
 
@@ -79,13 +79,17 @@ but P2 decreases.
 |---|---:|---|---:|---:|
 | <128 frames | 4 | P1 | 1/4 (25.0%) | **3/4 (75.0%)** |
 | | | P2 exact | 0/4 (0.0%) | 0/4 (0.0%) |
+| | | P3/P5 exact | 0/4 (0.0%) | 0/4 (0.0%) |
 | 128--255 frames | 46 | P1 | **14/46 (30.4%)** | 7/46 (15.2%) |
 | | | P2 exact | **16/46 (34.8%)** | 8/46 (17.4%) |
+| | | P3/P5 exact | **9/46 (19.6%)** | 5/46 (10.9%) |
 | >=256 frames | 30 | P1 | 7/30 (23.3%) | **8/30 (26.7%)** |
 | | | P2 exact | 8/30 (26.7%) | **9/30 (30.0%)** |
+| | | P3/P5 exact | 6/30 (20.0%) | 6/30 (20.0%) |
 
 Possible explanations include dilution of brief failure cues by similar frames
-and greater distance between corresponding moments across grouped views.
+and greater distance between corresponding moments across grouped views. The
+128--255-frame group decreases on all three prompting paths.
 
 ### 4.3 Adaptive-256 success bias on P2
 
@@ -96,8 +100,8 @@ and greater distance between corresponding moments across grouped views.
 | Failures mislabeled as `success` | **24/70** | 30/70 |
 | Failures assigned the exact type | **19/70** | 8/70 |
 
-Fixed 256 nearly doubles observed cost, without guaranteeing better
-performance.
+Fixed 256 nearly doubles observed cost. Adaptive 256 costs 68.6% more than
+fixed 128, while also decreasing all three accuracy measures.
 
 **Decision: use 128 frames/view.**
 
@@ -111,6 +115,7 @@ only:
 |---|---:|
 | P1 | 26/30 |
 | P2 primary type | 15/30 |
+| P3/P5 primary type | 24/30 |
 
 Temperature 0 does not make Gemini 3.1 Pro deterministic through OpenRouter.
 

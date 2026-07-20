@@ -80,7 +80,8 @@ factor. P3 goes through P5 before subtype scoring. Outputs are:
 - Per-call usage/retry metrics: `eval_design_choices/raw/{run_id}/.../metrics.jsonl`
 - Processed detection tables: `eval_design_choices/processed/{run_id}/`
 - Accuracy/F1 reports by prompt: `eval_design_choices/results/{run_id}/`
-- Aggregated cost report: `eval_design_choices/processed/costs/`
+- Cost report for only the run IDs selected by the command:
+  `eval_design_choices/results/<run-prefix>_costs/`
 
 `metrics.jsonl` contains call-level runtime, retries, token usage, and cost.
 Reports are grouped by task: P1 reports binary and balanced accuracy; P2 and

@@ -103,6 +103,11 @@ def _run_pool(fn: Callable, items: Iterable, concurrency: int) -> None:
             fn(it)
 
 
+def prediction_succeeded(row: dict) -> bool:
+    """Return whether a prediction row is complete enough to score or resume from."""
+    return row.get("success") is True and row.get("prediction") is not None
+
+
 def _latest_rows(path: Path) -> dict[str, dict]:
     """Return the latest row per sample, preferring any successful retry."""
     if not path.is_file():
@@ -117,16 +122,21 @@ def _latest_rows(path: Path) -> dict[str, dict]:
         if not sample_id:
             continue
         latest[sample_id] = row
-        if row.get("success") is True and row.get("prediction") is not None:
+        if prediction_succeeded(row):
             successful[sample_id] = row
     return {sample_id: successful.get(sample_id, row) for sample_id, row in latest.items()}
 
 
-def _completed_sample_ids(run_dir: Path) -> set[str]:
+def successful_sample_ids(predictions: str | Path) -> set[str]:
+    """Return unique sample IDs with a successful, non-null prediction."""
     return {
-        sample_id for sample_id, row in _latest_rows(run_dir / "predictions.jsonl").items()
-        if row.get("success") is True and row.get("prediction") is not None
+        sample_id for sample_id, row in _latest_rows(Path(predictions)).items()
+        if prediction_succeeded(row)
     }
+
+
+def _completed_sample_ids(run_dir: Path) -> set[str]:
+    return successful_sample_ids(run_dir / "predictions.jsonl")
 
 
 # --------------------------------------------------------------------------- #
@@ -218,7 +228,7 @@ def collect(
         with write_lock:
             _write_record(run_dir, run_id, task, model_name, dp.sample_id, result, ar,
                           expected=dp.expected)
-            if result.success:
+            if result.success and result.output is not None:
                 newly_succeeded.add(dp.sample_id)
 
     _run_pool(_process, pending, concurrency)
@@ -274,7 +284,7 @@ def run_parser(
                        "schema_request": schema_request})
 
     rows = list(_latest_rows(source_run_dir / "predictions.jsonl").values())
-    rows = [row for row in rows if row.get("success") is True and row.get("prediction") is not None]
+    rows = [row for row in rows if prediction_succeeded(row)]
     write_lock = threading.Lock()
     completed = _completed_sample_ids(run_dir)
     pending = [row for row in rows if row.get("sample_id") not in completed]
@@ -297,7 +307,7 @@ def run_parser(
             _write_record(run_dir, run_id, task, vlm_name, row.get("sample_id"), result, ar,
                           expected=row.get("expected"), metrics_model=llm_name,
                           extra={"source_vlm": vlm_name, "parser_llm": llm_name})
-            if result.success:
+            if result.success and result.output is not None:
                 newly_succeeded.add(row.get("sample_id"))
 
     _run_pool(_process, pending, concurrency)
