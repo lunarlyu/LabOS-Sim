@@ -1,0 +1,2 @@
+model,n_items,n_pos_cells,n_neg_cells,hits,false_alarms,mean_confidence,recall,fpr
+gemini_3_1_pro,80.0,210.0,1710.0,13.0,123.0,0.9459583333333331,0.06190476190476191,0.07192982456140351

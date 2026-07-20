@@ -1,0 +1,98 @@
+{
+  "run_id": "gemini31pro_n80_design_01_baseline_f128_views2_tok2048_res720",
+  "task": "vortex_closed_binary",
+  "model": "gemini_3_1_pro",
+  "model_cfg": {
+    "adapter": "gemini",
+    "role": "vlm",
+    "provider_model_id": "google/gemini-3.1-pro-preview",
+    "api_style": "openai_compatible",
+    "base_url_env": "OPENROUTER_BASE_URL",
+    "api_key_env": "OPENROUTER_API_KEY",
+    "media_transport": "data_uri",
+    "temperature": 0,
+    "max_completion_tokens": 2048,
+    "timeout_s": 180
+  },
+  "data_list": "eval_design_choices/run_lists/gemini31pro_n80_design_01_selected_80.jsonl",
+  "data_root": "data",
+  "camera_views": [
+    "front",
+    "gripper"
+  ],
+  "max_videos_per_sample": 0,
+  "concurrency": 1,
+  "schema_request": {
+    "enabled": true,
+    "provider_format": "json_schema",
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "closed_binary",
+        "strict": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "success",
+                "failure"
+              ]
+            },
+            "failure_modes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Always empty for this prompt."
+            },
+            "confidence": {
+              "type": "number"
+            },
+            "reasoning": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome",
+            "failure_modes",
+            "confidence",
+            "reasoning"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  },
+  "defaults": {
+    "media": {
+      "input_type": "image_contact_sheet",
+      "camera_views": [],
+      "max_videos_per_sample": 0,
+      "fairness_profile": "canonical_clip_1080px_30fps",
+      "preprocess": {
+        "transcode": {
+          "enabled": true,
+          "max_width": 1080,
+          "fps": 30,
+          "crf": 28,
+          "preset": "veryfast"
+        },
+        "contact_sheet": {
+          "max_width": 720,
+          "fps": 1,
+          "columns": 16,
+          "rows": 8,
+          "quality": 10,
+          "frame_count": 128
+        }
+      }
+    },
+    "call": {
+      "max_retries": 5,
+      "timeout_seconds": 180,
+      "max_completion_tokens": 2048
+    }
+  }
+}

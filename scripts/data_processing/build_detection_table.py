@@ -11,10 +11,10 @@ It reads **either** task schema:
 
   * ``single_choice_multiclass``  -- the model picks exactly one ``choice``;
     the flagged subtype set is ``{choice}`` (empty for "success").
-  * ``failure_mode_classification`` -- the model returns a ``failure_modes`` list
-    (multi-label); the flagged subtype set is that whole list. This schema is the
-    better match for the per-subtype binary SDT-IRT model and can carry genuine
-    multi-error clips.
+  * ``failure_mode_classification`` -- the model returns an importance-ordered
+    ``failure_modes`` list. This benchmark has one ground-truth failure type per
+    failure clip, so only the first (primary) predicted type is scored. Remaining
+    returned types stay in raw predictions for diagnostics.
 
 and either input form:
 
@@ -78,12 +78,33 @@ def _truth_set_from_failure_modes(fm) -> set[str]:
     return {str(x) for x in fm if x and str(x) != SUCCESS_LABEL}
 
 
+def _ordered_failure_modes(fm) -> list[str]:
+    """Normalize modes while preserving model-declared importance order."""
+    if not fm:
+        return []
+    if isinstance(fm, str):
+        fm = [x for x in fm.split("|") if x]
+    return [str(x) for x in fm if x and str(x) != SUCCESS_LABEL]
+
+
+def _primary_type(fm, outcome: str | None = None) -> str:
+    """Single scored class: success or the first (most-important) failure mode."""
+    modes = _ordered_failure_modes(fm)
+    if modes:
+        return modes[0]
+    return SUCCESS_LABEL if outcome == SUCCESS_LABEL else "unclassified_failure"
+
+
 def read_jsonl_run(jsonl: Path, metadata: Path) -> tuple[list[dict], str]:
     """Read a raw predictions.jsonl + ground-truth metadata -> records, schema."""
     meta = json.loads(metadata.read_text(encoding="utf-8"))
     samples = meta["samples"] if isinstance(meta, dict) and "samples" in meta else meta
     truth_by_id = {
         s["sample_id"]: _truth_set_from_failure_modes(s.get("failure_modes"))
+        for s in samples
+    }
+    truth_type_by_id = {
+        s["sample_id"]: _primary_type(s.get("failure_modes"), s.get("outcome"))
         for s in samples
     }
 
@@ -111,6 +132,11 @@ def read_jsonl_run(jsonl: Path, metadata: Path) -> tuple[list[dict], str]:
             "sample_id": sid,
             "truth_set": truth_by_id.get(sid, set()),
             "pred_set": pred_set,
+            "truth_type": truth_type_by_id.get(sid, SUCCESS_LABEL),
+            "pred_type": (
+                choice if "choice" in pred and choice else
+                _primary_type(pred.get("failure_modes"), pred.get("outcome"))
+            ),
             "confidence": pred.get("confidence", None) if status == "completed" else None,
             "outcome_truth": "failure" if truth_by_id.get(sid) else "success",
             "outcome_pred": pred.get("outcome", None),
@@ -151,10 +177,22 @@ def read_runs_root(runs_root: Path, metadata: Path | None = None,
             continue
         if exclude_run_ids and run_id in exclude_run_ids:
             continue
+        latest: dict[str, dict] = {}
+        successful: dict[str, dict] = {}
         for line in pj.read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
             row = json.loads(line)
+            sid = row.get("sample_id")
+            if not sid:
+                continue
+            latest[sid] = row
+            if row.get("success") is True and row.get("prediction") is not None:
+                successful[sid] = row
+        # A resumed run appends retries. Score one row per sample, preferring the
+        # latest successful response over any earlier transport/parse failures.
+        rows = [successful.get(sid, row) for sid, row in latest.items()]
+        for row in rows:
             pred = row.get("prediction") or {}
             # Skip raw freeform VLM outputs (open_detection_strict/free): they carry
             # observed_errors/description, not failure_modes, and must be ingested via
@@ -167,15 +205,19 @@ def read_runs_root(runs_root: Path, metadata: Path | None = None,
             if expected:
                 truth_set = _truth_set_from_failure_modes(expected.get("failure_modes"))
                 outcome_truth = expected.get("outcome") or ("failure" if truth_set else "success")
+                truth_type = _primary_type(expected.get("failure_modes"), outcome_truth)
             else:                                # fallback to metadata
                 truth_set = truth_by_id.get(sid, set())
                 outcome_truth = "failure" if truth_set else "success"
+                truth_type = next(iter(truth_set), SUCCESS_LABEL)
             scoring_model = row.get("source_vlm") if task.endswith("_parser") else row.get("model")
             records.append({
                 "model": scoring_model or row.get("model"),
                 "sample_id": sid,
                 "truth_set": truth_set,
                 "pred_set": _truth_set_from_failure_modes(pred.get("failure_modes")),
+                "truth_type": truth_type,
+                "pred_type": _primary_type(pred.get("failure_modes"), pred.get("outcome")),
                 "confidence": pred.get("confidence"),
                 "outcome_truth": outcome_truth,
                 "outcome_pred": pred.get("outcome"),
@@ -219,6 +261,11 @@ def read_flat_csv(csv: Path) -> tuple[list[dict], str]:
             "sample_id": d["sample_id"],
             "truth_set": truth_set,
             "pred_set": pred_set,
+            "truth_type": d["expected_choice"],
+            "pred_type": (
+                _primary_type(d.get("predicted_failure_modes"), d.get("outcome"))
+                if multilabel else (pc or "unclassified_failure")
+            ),
             "confidence": d.get("confidence", None),
             "outcome_truth": "failure" if truth_set else "success",
             "outcome_pred": d.get("outcome", None),
@@ -242,17 +289,22 @@ def build_long_table(
         # and are held out of the SDT-IRT fit rather than coerced to a flag.
         records = [r for r in records if r.get("outcome_pred") != AMBIGUOUS_LABEL]
 
-    # Subtype universe: canonical order, restricted to those seen in truth or pred.
+    # Failure-type universe for SDT cells. Only the primary (first, most
+    # important) predicted type is scored; extra model-returned types remain in
+    # raw predictions for diagnostics but do not create additional flags.
     seen: set[str] = set()
     for r in records:
-        seen |= r["truth_set"] | r["pred_set"]
+        seen |= {r.get("truth_type"), r.get("pred_type")}
+    seen.discard(None)
+    seen.discard(SUCCESS_LABEL)
+    seen.discard("unclassified_failure")
     subtypes = [c for c in DEFAULT_FAILURE_LABELS if c in seen]
     subtypes += sorted(s for s in seen if s not in DEFAULT_FAILURE_LABELS)
 
     rows = []
     for r in records:
         for c in subtypes:
-            is_present = int(c in r["truth_set"])
+            is_present = int(c == r.get("truth_type"))
             rows.append({
                 "run_id": r.get("run_id"),
                 "task": r.get("task"),
@@ -260,12 +312,14 @@ def build_long_table(
                 "sample_id": r["sample_id"],
                 "subtype": c,
                 "is_present": is_present,
-                "flagged": int(c in r["pred_set"]),
+                "flagged": int(c == r.get("pred_type")),
                 "channel": "positive" if is_present else "negative",
                 "confidence": r["confidence"],
                 "confidence_is_decision_level": True,
                 "outcome_truth": r["outcome_truth"],
                 "outcome_pred": r["outcome_pred"],
+                "truth_type": r.get("truth_type"),
+                "pred_type": r.get("pred_type"),
                 "status": r["status"],
                 "parser_llm": r.get("parser_llm"),
             })

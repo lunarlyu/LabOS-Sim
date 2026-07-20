@@ -75,7 +75,11 @@ class OpenAICompatibleAdapter(BaseVLMAdapter):
         request_metadata: dict[str, Any],
         response_format: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        content = [self._media_block(item) for item in media]
+        content: list[dict[str, Any]] = []
+        for item in media:
+            if item.get("label"):
+                content.append({"type": "text", "text": str(item["label"])})
+            content.append(self._media_block(item))
         content.append({"type": "text", "text": prompt})
         messages: list[dict[str, Any]] = []
         system_prompt = self.model_config.get("system_prompt")
@@ -116,8 +120,8 @@ class OpenAICompatibleAdapter(BaseVLMAdapter):
         start = time.perf_counter()
         response = requests.post(url, headers=self._headers(), data=json.dumps(payload), timeout=self.timeout)
         latency_s = time.perf_counter() - start
-        provider_response = response.json()
         response.raise_for_status()
+        provider_response = response.json()
         choice = provider_response["choices"][0]
         raw_text = choice.get("message", {}).get("content", "")
         return AdapterResult(

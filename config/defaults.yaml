@@ -3,11 +3,11 @@
 # (Which datapoints to run comes from --data run_list.jsonl, not from here.)
 
 media:
-  input_type: image_contact_sheet  # video | image_contact_sheet
-  camera_views: []             # [] = all angles (override per run with --camera-views)
+  input_type: image_frames      # full evaluation uses independent JPEG frames
+  camera_views: [front, left, right]  # fixed full-eval views; CLI may override
   max_videos_per_sample: 0     # 0 = all
   fairness_profile: canonical_clip_1080px_30fps
-  preprocess:                  # media.py reads media.preprocess.{transcode,contact_sheet}
+  preprocess:                  # media.py reads media.preprocess.* for the selected input type
     transcode:
       enabled: true
       max_width: 1080
@@ -19,9 +19,15 @@ media:
       fps: 1
       columns: 4
       rows: 8
-      quality: 3
+      # Shared payload-safe setting for base64 image APIs such as OpenRouter.
+      # q=3 produced >25 MB multi-view requests and HTTP 413 failures.
+      quality: 10
+    frames:
+      frame_count: 128
+      max_width: 720
+      quality: 10
 
 call:
   max_retries: 5
   timeout_seconds: 180
-  max_completion_tokens: 1400
+  max_completion_tokens: 2048

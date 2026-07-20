@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 
 MODELS=(gemini_3_1_pro gpt_5_5 claude_opus_4_8 qwen3_vl)   # VLMs (config/models.yaml)
 PARSER_LLM=gpt_5_5_parser                                  # text LLM for P5/P6 parsers
-CAMS=(front gripper)                                       # camera angles to send
+CAMS=(front left right)                                    # fixed camera angles to send
 CONC=4                                                     # parallel clips per model
 RUN_ID="${RUN_ID:-full_01}"                                # groups this run under runs/raw/{RUN_ID}/
 LABEL="${LABEL:-vortexing_v1}"                             # results/{LABEL}/

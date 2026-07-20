@@ -161,6 +161,16 @@ def _backoff_sleep(try_i: int) -> None:
     time.sleep(min(15.0, 1.5 * (2 ** try_i) + random.random()))
 
 
+def _http_status(exc: Exception) -> int | None:
+    """Best-effort status extraction across requests/openai/httpx errors."""
+    status = getattr(exc, "status_code", None)
+    if status is not None:
+        return int(status)
+    response = getattr(exc, "response", None)
+    status = getattr(response, "status_code", None)
+    return int(status) if status is not None else None
+
+
 def call_with_retries(
     adapter: BaseVLMAdapter,
     *,
@@ -203,6 +213,9 @@ def call_with_retries(
         except Exception as exc:  # noqa: BLE001
             print(f"[WARNING] call failed (attempt {attempt + 1}/{max_retries + 1}): {exc}", flush=True)
             result.register_error()
+            if _http_status(exc) == 413:
+                print("[WARNING] HTTP 413 is not retryable; reduce media payload size.", flush=True)
+                break
         if attempt < max_retries:
             _backoff_sleep(attempt)
     return result, last

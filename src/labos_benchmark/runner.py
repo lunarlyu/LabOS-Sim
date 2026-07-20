@@ -103,6 +103,32 @@ def _run_pool(fn: Callable, items: Iterable, concurrency: int) -> None:
             fn(it)
 
 
+def _latest_rows(path: Path) -> dict[str, dict]:
+    """Return the latest row per sample, preferring any successful retry."""
+    if not path.is_file():
+        return {}
+    latest: dict[str, dict] = {}
+    successful: dict[str, dict] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        sample_id = row.get("sample_id")
+        if not sample_id:
+            continue
+        latest[sample_id] = row
+        if row.get("success") is True and row.get("prediction") is not None:
+            successful[sample_id] = row
+    return {sample_id: successful.get(sample_id, row) for sample_id, row in latest.items()}
+
+
+def _completed_sample_ids(run_dir: Path) -> set[str]:
+    return {
+        sample_id for sample_id, row in _latest_rows(run_dir / "predictions.jsonl").items()
+        if row.get("success") is True and row.get("prediction") is not None
+    }
+
+
 # --------------------------------------------------------------------------- #
 # VLM collection (p1 / p2 / p3)
 # --------------------------------------------------------------------------- #
@@ -159,14 +185,28 @@ def collect(
                        "defaults": defaults})
 
     write_lock = threading.Lock()
+    completed = _completed_sample_ids(run_dir)
+    pending = [dp for dp in points if dp.sample_id not in completed]
+    newly_succeeded: set[str] = set()
 
     def _process(dp) -> None:
         videos = dp.resolve_videos(data_root, cams or None)
         if max_videos > 0:
             videos = videos[:max_videos]
         videos = maybe_transcode_videos(videos, Path(runs_root) / ".media_cache", media_cfg)
-        media_type = "image" if media_cfg.get("input_type") == "image_contact_sheet" else "video"
-        media = [{"type": media_type, "path": str(v["path"])} for v in videos]
+        media_type = (
+            "image"
+            if media_cfg.get("input_type") in {"image_contact_sheet", "image_frames"}
+            else "video"
+        )
+        media = [
+            {
+                "type": media_type,
+                "path": str(v["path"]),
+                **({"label": v["label"]} if v.get("label") else {}),
+            }
+            for v in videos
+        ]
         result, ar = _client.call_with_retries(
             adapter, prompt=prompt_text, media=media,
             request_metadata={"task": task, "model": model_name,
@@ -178,9 +218,16 @@ def collect(
         with write_lock:
             _write_record(run_dir, run_id, task, model_name, dp.sample_id, result, ar,
                           expected=dp.expected)
+            if result.success:
+                newly_succeeded.add(dp.sample_id)
 
-    _run_pool(_process, points, concurrency)
-    print(f"[done] {run_id} / {task} / {model_name}: {len(points)} clips -> {run_dir}")
+    _run_pool(_process, pending, concurrency)
+    n_success = len(completed | newly_succeeded)
+    if n_success == len(points):
+        print(f"[done] {run_id} / {task} / {model_name}: {n_success}/{len(points)} clips -> {run_dir}")
+    else:
+        print(f"[incomplete] {run_id} / {task} / {model_name}: "
+              f"{n_success}/{len(points)} clips succeeded; rerun the same command to retry failures -> {run_dir}")
     return run_dir
 
 
@@ -226,9 +273,12 @@ def run_parser(
                        "source_run_dir": str(source_run_dir), "model_cfg": model_cfg,
                        "schema_request": schema_request})
 
-    rows = [json.loads(ln) for ln in
-            (source_run_dir / "predictions.jsonl").read_text(encoding="utf-8").splitlines() if ln.strip()]
+    rows = list(_latest_rows(source_run_dir / "predictions.jsonl").values())
+    rows = [row for row in rows if row.get("success") is True and row.get("prediction") is not None]
     write_lock = threading.Lock()
+    completed = _completed_sample_ids(run_dir)
+    pending = [row for row in rows if row.get("sample_id") not in completed]
+    newly_succeeded: set[str] = set()
 
     def _process(row) -> None:
         src = row.get("prediction") or {}
@@ -247,9 +297,17 @@ def run_parser(
             _write_record(run_dir, run_id, task, vlm_name, row.get("sample_id"), result, ar,
                           expected=row.get("expected"), metrics_model=llm_name,
                           extra={"source_vlm": vlm_name, "parser_llm": llm_name})
+            if result.success:
+                newly_succeeded.add(row.get("sample_id"))
 
-    _run_pool(_process, rows, concurrency)
-    print(f"[done] {run_id} / {task}: parsed {source_run_dir} with {llm_name} ({len(rows)} rows) -> {run_dir}")
+    _run_pool(_process, pending, concurrency)
+    n_success = len(completed | newly_succeeded)
+    if n_success == len(rows):
+        print(f"[done] {run_id} / {task}: parsed {n_success}/{len(rows)} rows from "
+              f"{source_run_dir} with {llm_name} -> {run_dir}")
+    else:
+        print(f"[incomplete] {run_id} / {task}: parsed {n_success}/{len(rows)} rows from "
+              f"{source_run_dir}; rerun the same command to retry failures -> {run_dir}")
     return run_dir
 
 

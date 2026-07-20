@@ -23,7 +23,8 @@ def main() -> None:
                     help="one or more model names from config/models.yaml")
     ap.add_argument("--data", required=True, help="run_list.jsonl under data/")
     ap.add_argument("--run-id", default=None, help="label grouping this run (default: UTC timestamp)")
-    ap.add_argument("--camera-views", nargs="*", default=None, help="subset of angles (default: all)")
+    ap.add_argument("--camera-views", nargs="*", default=None,
+                    help="subset of angles (default: configured views)")
     ap.add_argument("--concurrency", type=int, default=1)
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--runs-root", default="runs")

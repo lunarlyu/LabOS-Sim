@@ -7,9 +7,9 @@ SDT-IRT fit (fit_sdt_irt.py). These are the "report direct statistics from the
 table" deliverable.
 
 Outputs (to --outdir, default results/direct_stats):
-  per_model_outcome.csv   outcome accuracy, success/failure recall, balanced acc,
-                          failure AUROC (if confidence present), macro-F1
-  per_subtype_stats.csv   per (model, subtype): recall, precision, F1, FPR
+  per_model_metrics.csv   P1 binary metrics or P2/P3 exact primary-type metrics
+  per_model_outcome.csv   deprecated compatibility alias of per_model_metrics.csv
+  per_subtype_stats.csv   per type: exact overall accuracy, precision, recall, F1, FPR
   direct_stats.md         human-readable summary
 """
 from __future__ import annotations
@@ -50,50 +50,89 @@ def _prf(tp: int, fp: int, fn: int) -> tuple[float, float, float]:
 
 
 def per_subtype_stats(long: pd.DataFrame, group_cols: list[str]) -> pd.DataFrame:
+    """Eight-class per-type metrics (success + seven failure types)."""
     out = []
-    for keys, d in long.groupby(group_cols + ["subtype"], sort=False):
+    for keys, d in long.groupby(group_cols, sort=False):
         keys = keys if isinstance(keys, tuple) else (keys,)
-        tp = int(((d.is_present == 1) & (d.flagged == 1)).sum())
-        fp = int(((d.is_present == 0) & (d.flagged == 1)).sum())
-        fn = int(((d.is_present == 1) & (d.flagged == 0)).sum())
-        tn = int(((d.is_present == 0) & (d.flagged == 0)).sum())
-        recall, precision, f1 = _prf(tp, fp, fn)
-        row = dict(zip(group_cols + ["subtype"], keys))
-        row.update(n_present=tp + fn, n_absent=fp + tn, tp=tp, fp=fp, fn=fn,
-                   recall=recall, precision=precision, f1=f1,
-                   fpr=(fp / (fp + tn) if (fp + tn) else float("nan")))
-        out.append(row)
+        if "task" in group_cols:
+            task_value = str(keys[group_cols.index("task")])
+            if task_value.endswith("closed_binary"):
+                continue
+        samples = d.drop_duplicates("sample_id")
+        exact_accuracy = float((samples["truth_type"] == samples["pred_type"]).mean())
+        # Fixed benchmark universe: success + the seven catalog error types.
+        # `other_failure`/unclassified predictions count as exact-match errors
+        # but never become a ninth scored class.
+        classes = ["success", "cap_open", "tube_drop", "tube_empty", "vortex_off",
+                   "wrong_orientation", "wrong_rack", "rack_flipped"]
+        for class_name in classes:
+            truth = samples["truth_type"] == class_name
+            pred = samples["pred_type"] == class_name
+            tp = int((truth & pred).sum())
+            fp = int((~truth & pred).sum())
+            fn = int((truth & ~pred).sum())
+            tn = int((~truth & ~pred).sum())
+            recall, precision, f1 = _prf(tp, fp, fn)
+            row = dict(zip(group_cols, keys))
+            row.update(type=class_name, n_truth=tp + fn,
+                       overall_exact_accuracy=exact_accuracy,
+                       precision=precision, recall=recall, f1=f1,
+                       fpr=(fp / (fp + tn) if (fp + tn) else float("nan")))
+            out.append(row)
     return pd.DataFrame(out)
 
 
 def per_model_outcome(long: pd.DataFrame, subtype_df: pd.DataFrame,
                       group_cols: list[str]) -> pd.DataFrame:
-    # outcome-level: one row per (group, sample) — dedupe the subtype expansion
+    """Headline task metric: P1 binary outcome; P2/P3 primary failure type."""
     one = long.drop_duplicates(subset=group_cols + ["sample_id"]).copy()
     out = []
     for keys, d in one.groupby(group_cols, sort=False):
         keys = keys if isinstance(keys, tuple) else (keys,)
-        truth_fail = (d.outcome_truth == "failure").to_numpy().astype(int)
-        pred_fail = (d.outcome_pred == "failure").to_numpy().astype(int)
-        acc = float((truth_fail == pred_fail).mean())
-        succ_recall = float((pred_fail[truth_fail == 0] == 0).mean()) if (truth_fail == 0).any() else float("nan")
-        fail_recall = float((pred_fail[truth_fail == 1] == 1).mean()) if (truth_fail == 1).any() else float("nan")
-        bal_acc = np.nanmean([succ_recall, fail_recall])
-        # failure AUROC from decision-level confidence: p(failure)=conf if pred=fail else 1-conf
-        conf = pd.to_numeric(d.confidence, errors="coerce").to_numpy()
-        p_fail = np.where(pred_fail == 1, conf, 1 - conf)
-        auroc = _auroc(truth_fail.astype(float), p_fail)
+        tasks = set(d["task"].dropna().astype(str)) if "task" in d.columns else set()
+        is_binary = bool(tasks) and all(t.endswith("closed_binary") for t in tasks)
         sub = subtype_df
         for col, val in zip(group_cols, keys):
             sub = sub[sub[col] == val]
-        macro_f1 = float(np.nanmean(sub.f1.to_numpy())) if len(sub) else float("nan")
+        if is_binary:
+            # P1 positive class is correct/success, per benchmark convention.
+            truth = (d.outcome_truth == "success").astype(int)
+            pred = (d.outcome_pred == "success").astype(int)
+            tp = int(((truth == 1) & (pred == 1)).sum())
+            fp = int(((truth == 0) & (pred == 1)).sum())
+            fn = int(((truth == 1) & (pred == 0)).sum())
+            tn = int(((truth == 0) & (pred == 0)).sum())
+            recall, precision, f1 = _prf(tp, fp, fn)
+            failure_recall = tn / (tn + fp) if (tn + fp) else float("nan")
+            row_metrics = {
+                "metric_target": "binary_correctness",
+                "n_samples": len(d),
+                "accuracy": float((truth == pred).mean()),
+                "balanced_accuracy": float(np.nanmean([recall, failure_recall])),
+                "success_recall": recall,
+                "failure_recall": failure_recall,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
+                "fpr": fp / (fp + tn) if (fp + tn) else float("nan"),
+            }
+        else:
+            row_metrics = {
+                "metric_target": "eight_class_primary_type",
+                "n_samples": len(d),
+                "accuracy": float((d["truth_type"] == d["pred_type"]).mean()),
+                "balanced_accuracy": float("nan"),
+                "success_recall": float("nan"),
+                "failure_recall": float("nan"),
+                "precision": float(np.nanmean(sub["precision"])) if len(sub) else float("nan"),
+                "recall": float(np.nanmean(sub["recall"])) if len(sub) else float("nan"),
+                "f1": float(np.nanmean(sub["f1"])) if len(sub) else float("nan"),
+                "fpr": float(np.nanmean(sub["fpr"])) if len(sub) else float("nan"),
+            }
         row = dict(zip(group_cols, keys))
-        row.update(n_samples=int(len(d)), outcome_accuracy=acc,
-                   success_recall=succ_recall, failure_recall=fail_recall,
-                   balanced_accuracy=float(bal_acc), failure_auroc=auroc,
-                   macro_f1_subtype=macro_f1)
+        row.update(row_metrics)
         out.append(row)
-    return pd.DataFrame(out).sort_values("balanced_accuracy", ascending=False)
+    return pd.DataFrame(out).sort_values("accuracy", ascending=False)
 
 
 def main(argv=None) -> None:
@@ -123,6 +162,7 @@ def main(argv=None) -> None:
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     subtype_df.to_csv(args.outdir / "per_subtype_stats.csv", index=False)
+    outcome_df.to_csv(args.outdir / "per_model_metrics.csv", index=False)
     outcome_df.to_csv(args.outdir / "per_model_outcome.csv", index=False)
 
     lines = [
@@ -131,11 +171,17 @@ def main(argv=None) -> None:
         f"- Grouping: {' x '.join(group_cols)}",
         f"- Models: {', '.join(sorted(long['model'].unique()))}",
         f"- Subtypes: {', '.join(sorted(long['subtype'].unique()))}\n",
-        "## Per-model outcome metrics\n",
+        "## Complete headline metrics\n",
         outcome_df.round(3).to_markdown(index=False),
         "",
-        "## Per-subtype recall / precision / F1\n",
+        "## Per-type precision / recall / F1 / FPR\n",
         subtype_df.round(3).to_markdown(index=False),
+        "",
+        "For P1, the metric target is binary correctness (success/correct is positive).",
+        "For P2/P3, the target is one of eight classes: success or seven error types.",
+        "`accuracy` requires the single primary predicted type to exactly equal truth.",
+        "If a model returns multiple ordered types, only its first (most important)",
+        "type is scored. Precision/recall/F1/FPR are macro per-type for P2/P3.",
         "",
         "Note: these are hard-0.5 (thresholded-flag) statistics at the benchmark's",
         "own prevalence. For criterion-separated, prevalence-adjustable metrics with",

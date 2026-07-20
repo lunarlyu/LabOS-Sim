@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Cheap end-to-end validation of the live collection path: one model, a few clips,
-# two camera angles. Run from anywhere; it cd's to the repo root.
+# the full-eval camera angles. Run from anywhere; it cd's to the repo root.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -12,10 +12,10 @@ echo "== build a tiny run list ($LIMIT clips) =="
 mkdir -p data
 head -n "$LIMIT" data/real_human/metadata.jsonl > data/smoke_run_list.jsonl
 
-echo "== P3 multilabel: $MODEL, front+gripper angles, run_id=$RUN_ID =="
+echo "== P3 multilabel: $MODEL, front+left+right angles, run_id=$RUN_ID =="
 python scripts/data_collection/run_multilabel_classification.py \
     --models "$MODEL" --data data/smoke_run_list.jsonl --run-id "$RUN_ID" \
-    --camera-views front gripper --concurrency 2
+    --camera-views front left right --concurrency 2
 
 echo "== build detection table =="
 python scripts/data_processing/build_detection_table.py --runs-root runs --outdir runs/processed

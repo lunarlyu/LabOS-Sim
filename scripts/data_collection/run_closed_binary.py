@@ -24,7 +24,7 @@ def main() -> None:
     ap.add_argument("--run-id", default=None,
                     help="label grouping this run, e.g. test_01 (default: UTC timestamp)")
     ap.add_argument("--camera-views", nargs="*", default=None,
-                    help="subset of angles, e.g. front gripper (default: all)")
+                    help="subset of angles, e.g. front left right (default: configured views)")
     ap.add_argument("--concurrency", type=int, default=1, help="parallel clips per model")
     ap.add_argument("--limit", type=int, default=None, help="cap number of datapoints")
     ap.add_argument("--runs-root", default="runs")

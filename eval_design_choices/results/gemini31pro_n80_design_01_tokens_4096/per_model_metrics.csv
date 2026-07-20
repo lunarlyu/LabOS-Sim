@@ -1,0 +1,4 @@
+task,model,metric_target,n_samples,accuracy,balanced_accuracy,success_recall,failure_recall,precision,recall,f1,fpr
+vortex_closed_binary,gemini_3_1_pro,binary_correctness,80,0.4875,0.5785714285714285,0.7,0.45714285714285713,0.15555555555555556,0.7,0.2545454545454545,0.5428571428571428
+vortex_open_detection_strict_parser,gemini_3_1_pro,eight_class_primary_type,80,0.1375,,,,0.1275,0.1375,0.076496779082986,0.11964285714285713
+vortex_multilabel_classification,gemini_3_1_pro,eight_class_primary_type,80,0.125,,,,0.1968043031165955,0.125,0.08417309891366495,0.125

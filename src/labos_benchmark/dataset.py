@@ -60,17 +60,17 @@ class DataPoint:
 
     def resolve_videos(self, data_root: str | Path = "data",
                        camera_views: list[str] | None = None) -> list[dict[str, Any]]:
-        """Return [{camera_view, file, path}], filtered to camera_views if given.
+        """Return [{camera_view, file, path}], ordered by camera_views if given.
 
         `path` is the on-disk path (data_root / file).
         """
         root = Path(data_root)
-        out: list[dict[str, Any]] = []
-        for v in self.videos:
-            if camera_views and v.get("camera_view") not in camera_views:
-                continue
-            out.append({**v, "path": str(root / v["file"])})
-        return out
+        if camera_views:
+            by_view = {str(v.get("camera_view")): v for v in self.videos}
+            selected = [by_view[view] for view in camera_views if view in by_view]
+        else:
+            selected = self.videos
+        return [{**v, "path": str(root / v["file"])} for v in selected]
 
 
 def load_datapoints(jsonl_path: str | Path) -> list[DataPoint]:

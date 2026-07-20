@@ -9,6 +9,12 @@ data/**
 runs/raw/
 runs/.media_cache/
 
+# Design-choice predictions and derived results are versioned; media is not.
+eval_design_choices/.media_cache/
+
+# Local paper draft; publish separately when submission text is ready.
+paper/icml_appendix_design_choices.md
+
 # Secrets
 .env
 _env.json

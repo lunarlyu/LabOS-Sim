@@ -1,0 +1,5 @@
+task,model,calls,total_cost_usd,input_tokens,output_tokens
+vortex_multilabel_classification,gemini_3_1_pro,645,785.3803176,214344220,729137
+vortex_closed_binary,gemini_3_1_pro,640,757.1726852,196988009,569030
+vortex_open_detection_strict,gemini_3_1_pro,602,649.4811552,166826496,531615
+vortex_open_detection_strict_parser,gpt_5_5_parser,560,2.6954,796498,39657

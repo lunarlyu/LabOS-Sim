@@ -50,6 +50,8 @@ class GeminiAdapter(BaseVLMAdapter):
         for item in media:
             if item["type"] not in {"image", "video"}:
                 raise ValueError(f"Unsupported Gemini media type: {item['type']}")
+            if item.get("label"):
+                contents.append(str(item["label"]))
             uploaded = client.files.upload(file=item["path"])
             while True:
                 uploaded = client.files.get(name=uploaded.name)
