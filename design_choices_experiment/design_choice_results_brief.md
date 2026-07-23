@@ -105,9 +105,13 @@ frames/view**.
 
 ## Notes
 
-- P1 is binary success/failure accuracy.
-- P2 and parsed P3/P5 require an exact primary-type match among success and seven
-  failure types.
+- **P1 accuracy:** overall binary success/failure accuracy.
+- **P1 balanced:** mean of success recall and failure recall.
+- **P2 exact:** exact primary-type accuracy when the VLM is given the failure
+  taxonomy; the prediction must match one of eight classes (success or seven
+  failure types).
+- **P3/P5 exact:** exact primary-type accuracy when P3 detects errors without
+  seeing the taxonomy and P5 maps its description to the same eight classes.
 - Evaluations use **front + left + right**. `front_lower` is stored for dataset
   compatibility but is not sent to the VLM.
 - Costs include all three prompts, the P5 parser, and retries with reported usage.
