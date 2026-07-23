@@ -8,8 +8,8 @@ Two modes, dispatched by prompt_type:
 
 Outputs go to runs/raw/{run_id}/{task}/{vlm}[/{llm}]/ with predictions.jsonl,
 metrics.jsonl and run_config.json (raw provider text + finish_reason live inline
-in predictions.jsonl). Preprocessed media is content-addressed in a shared
-runs/.media_cache/ so re-runs reuse transcodes instead of redoing ffmpeg. The
+in predictions.jsonl). Preprocessed media is content-addressed in a shared,
+configurable cache so re-runs reuse transcodes instead of redoing ffmpeg. The
 run_id (e.g. test_01, full_01) groups everything from one run; the datapoints to
 run come from a --data run_list.jsonl. See docs/ARCHITECTURE.md.
 
@@ -154,6 +154,7 @@ def collect(
     concurrency: int = 1,
     runs_root: str | Path = "runs",
     data_root: str | Path = "data",
+    media_cache_root: str | Path | None = None,
 ) -> Path:
     """Collect one VLM's answers for a task: for each clip, one call with its angles.
 
@@ -187,10 +188,16 @@ def collect(
         points = points[:limit]
 
     run_dir = _new_run_dir(run_id, task, model_name, runs_root=runs_root)
+    cache_root = (
+        Path(media_cache_root)
+        if media_cache_root is not None
+        else Path(runs_root) / ".media_cache"
+    )
     atomic_write_json(run_dir / "run_config.json",
                       {"run_id": run_id, "task": task, "model": model_name, "model_cfg": model_cfg,
                        "data_list": str(data_list), "data_root": str(data_root),
                        "camera_views": cams, "max_videos_per_sample": max_videos,
+                       "media_cache_root": str(cache_root),
                        "concurrency": concurrency, "schema_request": schema_request,
                        "defaults": defaults})
 
@@ -203,7 +210,7 @@ def collect(
         videos = dp.resolve_videos(data_root, cams or None)
         if max_videos > 0:
             videos = videos[:max_videos]
-        videos = maybe_transcode_videos(videos, Path(runs_root) / ".media_cache", media_cfg)
+        videos = maybe_transcode_videos(videos, cache_root, media_cfg)
         media_type = (
             "image"
             if media_cfg.get("input_type") in {"image_contact_sheet", "image_frames"}

@@ -30,6 +30,7 @@ TASKS = [
 ]
 PARSER_TASK = "vortex_open_detection_strict_parser"
 RUNS_ROOT = Path("design_choices/artifacts")
+MEDIA_CACHE_ROOT = Path(".cache/design_choices/media")
 
 CONDITIONS = {
     "baseline_f128_views3_tok2048_res720": {
@@ -204,6 +205,7 @@ def main() -> None:
                 data_list=run_list, camera_views=condition["views"],
                 limit=args.limit, concurrency=args.concurrency, runs_root=runs_root,
                 data_root=REPO_ROOT / "data",
+                media_cache_root=REPO_ROOT / MEDIA_CACHE_ROOT,
             )
             require_complete(run_dirs[task], expected_run_samples)
         # P3 does not emit canonical failure_modes. Normalize it through P5

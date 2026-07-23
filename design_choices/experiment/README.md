@@ -1,8 +1,8 @@
 # VLM evaluation design choices
 
 Development experiment for selecting VLM input and generation settings. This
-folder records the sample, active comparisons, runner, and presentation report.
-Generated evidence is stored in the sibling `../artifacts/` directory.
+folder records the sample, active comparisons, and runner. The presentation
+report is `../RESULTS.md`; generated evidence is stored in `../artifacts/`.
 
 ## Fixed settings
 
@@ -120,7 +120,13 @@ three prompts are never averaged into one headline score.
 
 ## Reports
 
-- `design_choice_results_brief.md`: presentation-facing tables.
+- `../RESULTS.md`: presentation-facing tables and the selected design.
+
+Regenerable contact sheets and independent-frame JPEGs are cached locally at
+`.cache/design_choices/media/` and are not tracked by Git. A snapshot of the
+processed design-study media is also stored in the separate Hugging Face dataset
+`labos-sim/eval` under `design_choice_dev_set/media_cache`; the runner can still
+regenerate the cache from local source videos when needed.
 
 Historical 80-sample contact-sheet artifacts are retained as the staged
 comparison preceding the independent-frame experiment. The runner only creates

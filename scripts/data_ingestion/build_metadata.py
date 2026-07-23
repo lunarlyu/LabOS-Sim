@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build a per-dataset metadata.jsonl catalog (one DataPoint per line).
 
-Converts the legacy metadata json (metadata/real_human_samples_no_multiple.json)
+Converts the source metadata json (data/real_human/source_metadata.json)
 into data/{dataset}/metadata.jsonl with video paths relative to data/, so a
 single data_root resolves every dataset subfolder.
 
@@ -23,8 +23,8 @@ def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--input", type=Path,
-                    default=Path("metadata/real_human_samples_no_multiple.json"),
-                    help="legacy metadata json to convert")
+                    default=Path("data/real_human/source_metadata.json"),
+                    help="source metadata json to convert")
     ap.add_argument("--dataset", default="real_human", help="data subfolder name")
     ap.add_argument("--video-subdir", default="video_Carrie",
                     help="subdir under data/{dataset} holding the clips")

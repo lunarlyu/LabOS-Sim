@@ -21,7 +21,7 @@ and either input form:
   * ``--csv per_sample_predictions.csv``  (a flat per-sample table; the
     single-choice reporter already emits one). Multi-label flat CSVs are
     supported too via a ``predicted_failure_modes`` column (``|``-separated).
-  * ``--jsonl runs/<run>/predictions.jsonl --metadata metadata/<gt>.json``
+  * ``--jsonl runs/<run>/predictions.jsonl --metadata data/<dataset>/metadata.jsonl``
     (the raw run + ground-truth metadata, for either schema).
 
 Outputs (to --outdir):

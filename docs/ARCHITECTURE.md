@@ -46,12 +46,10 @@ LabOS-Sim/
 │   ├── p6_open_detection_free_parser.md    # parser for p4
 │   └── PROMPT_CATALOG.md
 │
-├── metadata/                       # legacy ground-truth source json (input to build_metadata)
-│   └── real_human_samples_no_multiple.json
-│
 ├── data/                           # datasets: videos GITIGNORED, catalogs TRACKED
 │   ├── real_human/
-│   │   ├── metadata.jsonl          # CATALOG: one DataPoint/line (tracked)
+│   │   ├── source_metadata.json    # imported source metadata (tracked)
+│   │   ├── metadata.jsonl          # canonical catalog: one DataPoint/line (tracked)
 │   │   └── video_<subject>/...     # the .mp4 clips (gitignored)
 │   └── *run_list*.jsonl            # selection to run (subset/full), tracked; --data points here
 │
@@ -69,6 +67,7 @@ LabOS-Sim/
 │       └── cost_summary.csv       # totals derived from canonical raw metrics.jsonl
 │
 ├── results/                        # final deliverables, keyed by ANALYSIS LABEL (versioned)
+│   ├── README.md                   # full-run output contract
 │   └── {analysis_label}/           # e.g. vortexing_v1 — selects which models/tasks/runs to include
 │       ├── model_leaderboard.csv
 │       ├── per_model_subtype.csv
@@ -99,16 +98,19 @@ LabOS-Sim/
 │
 ├── design_choices/                 # self-contained VLM design study
 │   ├── README.md
-│   ├── experiment/                 # specification, runner, and report
+│   ├── RESULTS.md                  # collaborator-facing result summary
+│   ├── experiment/                 # specification and runner
 │   │   ├── run_experiment.py
 │   │   ├── design_matrix.yaml
 │   │   ├── selected_samples_10_per_type.csv
-│   │   └── design_choice_results_brief.md
 │   └── artifacts/                  # versioned evidence produced by the study
 │       ├── run_lists/selected_80.jsonl # canonical sample set for every condition
 │       ├── raw/                    # predictions, metrics, resolved run configs
 │       ├── processed/              # normalized detection tables
 │       └── results/                # direct metrics and cost summaries
+│
+├── .cache/                         # local, regenerable, gitignored media cache
+│   └── design_choices/media/
 │
 └── src/labos_benchmark/            # the reusable engine (importable package) — kept lean
     ├── __init__.py
@@ -269,7 +271,7 @@ written for this branch. Sources: **jren-A** = `jren/benchmarking` System A
 | File in this repository | Source | Transfer |
 |---|---|---|
 | `prompts/p1,p2,p3,p6 + PROMPT_CATALOG.md` | jren-A `prompts/` | imported (these were refined on jren/benchmarking earlier) |
-| `metadata/real_human_samples_no_multiple.json` | jren-A `metadata/` | imported (verbatim) |
+| `data/real_human/source_metadata.json` | jren-A legacy source metadata | imported (verbatim) |
 | `scripts/data_ingestion/download_real_human.py` | jren-A `scripts/download_real_human.py` | imported (verbatim) |
 | `src/labos_benchmark/adapters/openai_compatible.py` | jren-B `adapters/openai_compatible.py` | imported (import path fixed) |
 | `src/labos_benchmark/adapters/gemini.py` | jren-B `adapters/gemini.py` | imported (import path fixed) |

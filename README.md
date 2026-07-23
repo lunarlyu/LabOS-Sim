@@ -9,10 +9,13 @@ laboratory-automation videos.
 - `scripts/`: command-line entry points, including `scripts/workflows/` for
   end-to-end smoke and full-suite runs.
 - `config/` and `prompts/`: model registries, defaults, schemas, and prompt text.
-- `data/`: tracked metadata catalogs plus locally downloaded, gitignored videos.
-- `runs/` and `results/`: normal benchmark outputs.
+- `data/`: tracked source metadata and pipeline catalogs plus locally
+  downloaded, gitignored videos.
+- `runs/` and `results/`: normal benchmark outputs; `results/README.md`
+  documents the full-run output contract.
 - `design_choices/`: self-contained design study, with experiment definitions
-  under `experiment/` and versioned evidence under `artifacts/`.
+  under `experiment/`, a collaborator summary in `RESULTS.md`, and versioned
+  evidence under `artifacts/`.
 - `docs/ARCHITECTURE.md`: detailed pipeline structure and data flow.
 
 The design study is isolated from normal full-run outputs. See
