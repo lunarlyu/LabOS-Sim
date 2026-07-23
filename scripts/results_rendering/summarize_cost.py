@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Aggregate per-call cost across all or selected runs.
 
-Reads every runs/raw/**/metrics.jsonl, writes:
-  runs/processed/cost_long.csv     one row per call (with task, model, run_id)
+Reads every runs/raw/**/metrics.jsonl and writes:
   runs/processed/cost_summary.csv  totals per (run_id, task, model)
+
+The raw metrics.jsonl files are the canonical call-level evidence, so this
+script intentionally does not duplicate them into a cost_long.csv.
 """
 from __future__ import annotations
 
@@ -49,8 +51,6 @@ def main(argv=None) -> None:
     df = pd.DataFrame(rows)
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
-    df.to_csv(outdir / "cost_long.csv", index=False)
-
     summ = (
         df.groupby(["run_id", "task", "model"])
         .agg(calls=("cost", "size"), total_cost_usd=("cost", "sum"),

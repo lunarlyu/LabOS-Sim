@@ -14,7 +14,7 @@
     "max_completion_tokens": 2048,
     "timeout_s": 180
   },
-  "data_list": "/Users/luna/Documents/LabOS-sim/carrie-branching/eval_design_choices/run_lists/gemini31pro_hybrid_design_01_selected_80.jsonl",
+  "data_list": "eval_design_choices/run_lists/selected_80.jsonl",
   "data_root": "/Users/luna/Documents/LabOS-sim/carrie-branching/data",
   "camera_views": [
     "front",

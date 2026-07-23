@@ -14,7 +14,7 @@
     "max_completion_tokens": 2048,
     "timeout_s": 180
   },
-  "data_list": "eval_design_choices/run_lists/gemini31pro_multiframe_design_02_selected_80.jsonl",
+  "data_list": "eval_design_choices/run_lists/selected_80.jsonl",
   "data_root": "data",
   "camera_views": [
     "front",

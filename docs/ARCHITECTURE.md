@@ -1,7 +1,7 @@
 # LabOS-Sim benchmark — architecture & target layout
 
-Status: target design for the re-organized pipeline (branch `carrie/branching`).
-Updated: 2026-06-28. This `docs/` folder is the place for collaborator-facing
+Status: current repository layout.
+Updated: 2026-07-22. This `docs/` folder is the place for collaborator-facing
 design notes.
 
 ## Purpose
@@ -26,7 +26,7 @@ Three capability levels (detail in `capability_levels.md`):
 LabOS-Sim/
 ├── README.md
 ├── requirements.txt
-├── .gitignore                      # ignores data/, runs/, __pycache__
+├── .gitignore                      # ignores videos, raw full runs, caches, secrets
 │
 ├── docs/                           # collaborator-facing design notes (versioned)
 │   ├── ARCHITECTURE.md             # this file
@@ -55,8 +55,8 @@ LabOS-Sim/
 │   │   └── video_<subject>/...     # the .mp4 clips (gitignored)
 │   └── *run_list*.jsonl            # selection to run (subset/full), tracked; --data points here
 │
-├── runs/                           # all run artifacts (GITIGNORED, regenerable)
-│   ├── raw/                        # run_id-first: one tree per run
+├── runs/                           # standard benchmark run artifacts
+│   ├── raw/                        # gitignored; run_id-first
 │   │   └── {run_id}/                              # e.g. test_01, full_01
 │   │       ├── {task}/{vlm}/                      # P1-P4 (VLM collection)
 │   │       │   ├── predictions.jsonl             # incl. ground-truth "expected" per row
@@ -66,7 +66,7 @@ LabOS-Sim/
 │   │       └── {task}/{vlm}/{llm}/                # P5/P6 parsers (source VLM + parsing LLM)
 │   └── processed/                 # digested intermediates, MERGED across run_ids
 │       ├── detections_long.csv    # one row per (model, task, sample, subtype) + run_id provenance
-│       └── cost_long.csv          # one row per call, flattened from all metrics.jsonl
+│       └── cost_summary.csv       # totals derived from canonical raw metrics.jsonl
 │
 ├── results/                        # final deliverables, keyed by ANALYSIS LABEL (versioned)
 │   └── {analysis_label}/           # e.g. vortexing_v1 — selects which models/tasks/runs to include
@@ -89,14 +89,25 @@ LabOS-Sim/
 │   │   └── run_open_detection_free_parser.py     # P6 → LLM (parses P4)
 │   ├── data_processing/
 │   │   └── build_detection_table.py             # runs/raw/** → runs/processed/detections_long.csv
-│   └── results_rendering/
-│       ├── fit_sdt_irt.py                  # detections_long.csv → M1/M2 fit → results/{label}/
-│       ├── report_stats.py                 # detections_long.csv → direct (model-free) statistics
-│       └── summarize_cost.py               # runs/**/metrics.jsonl → cost_long.csv + cost_summary.csv
+│   ├── results_rendering/
+│   │   ├── fit_sdt_irt.py                  # detections_long.csv → M1/M2 fit → results/{label}/
+│   │   ├── report_stats.py                 # detections_long.csv → direct (model-free) statistics
+│   │   └── summarize_cost.py               # runs/**/metrics.jsonl → cost_summary.csv
+│   └── workflows/                         # one-command benchmark workflows
+│       ├── smoke_test.sh                   # cheap live-path validation
+│       └── run_full_suite.sh               # all models × tasks → process → render
 │
-├── shell_scripts/                  # one-command iteration over models/tasks
-│   ├── smoke_test.sh               # cheap live-path validation (1 model, few clips)
-│   └── run_full_suite.sh           # all models × tasks → process → render
+├── design_choices_experiment/      # design-study specification and entry point
+│   ├── run_experiment.py
+│   ├── design_matrix.yaml
+│   ├── selected_samples_10_per_type.csv
+│   └── design_choice_results_brief.md
+│
+├── eval_design_choices/            # versioned evidence produced by that study
+│   ├── run_lists/selected_80.jsonl # one canonical sample set for every condition
+│   ├── raw/                        # predictions, metrics, resolved run configs
+│   ├── processed/                  # normalized detection tables
+│   └── results/                    # direct metrics and cost summaries
 │
 └── src/labos_benchmark/            # the reusable engine (importable package) — kept lean
     ├── __init__.py
@@ -158,7 +169,7 @@ in a sprawl of pre-authored config files. (This is why the old
 `.../{vlm}/{llm}/` for the parser) groups everything from one run under its
 `run_id` (e.g. `test_01`, `full_01`), so test vs. full runs are visibly separate.
 The `{llm}` level appears only for the parser tasks, because their output depends
-on both the VLM that produced the P2 text and the LLM that parsed it.
+on both the VLM that produced the P3/P4 text and the LLM that parsed it.
 `runs/processed/` merges raw runs into tidy tables with `run_id` provenance, so
 `results/{analysis_label}/` can integrate across multiple runs rather than being
 pinned to one.
@@ -171,10 +182,11 @@ in each prediction record's `expected` field, so downstream processing needs no
 separate metadata.
 
 **Generated vs. source.** Under `data/`, the `.mp4` videos are gitignored but the
-`metadata.jsonl` catalogs and `*run_list*.jsonl` selections are tracked. `runs/` is
-gitignored. `config/`, `prompts/`, `data/**/metadata.jsonl`, `docs/`, `results/`,
-`scripts/`, `src/` are versioned — the shareable, reproducible benchmark.
-(`results/` is the deliverable; `runs/` is the regenerable raw material behind it.)
+`metadata.jsonl` catalogs and selected run lists are tracked. Standard benchmark
+raw runs and media caches are gitignored. The design study is an explicit
+exception: its raw JSONL evidence, processed tables, and final summaries are
+versioned under `eval_design_choices/`, while its large media cache remains
+gitignored.
 
 **Lean package.** `src/labos_benchmark/` deliberately keeps few modules: cost +
 call wrapper merged into `client.py`; all schemas in one `schemas.py`; the parser
@@ -189,7 +201,7 @@ config/ + prompts/ + data/{dataset}/metadata.jsonl + data/run_list.jsonl   (inpu
 runs/raw/{run_id}/{task}/{vlm}[/{llm}]/        predictions.jsonl (+ expected) + metrics.jsonl
         │
         ▼  scripts/data_processing/build_detection_table.py   (globs runs/raw/**, truth from records)
-runs/processed/detections_long.csv  (+ cost_long.csv)
+runs/processed/detections_long.csv  (+ cost_summary.csv)
         │
         ▼  scripts/results_rendering/{fit_sdt_irt.py, report_stats.py, summarize_cost.py}
 results/{analysis_label}/   leaderboard, M1/M2 fits, direct stats, cost_summary, figures
@@ -253,7 +265,7 @@ written for this branch. Sources: **jren-A** = `jren/benchmarking` System A
 (`src/labos_benchmark`, `scripts`, `metadata`, `prompts`); **jren-B** =
 `jren/benchmarking` `labos-sim-eval`; **brdm** = the `brdm_peer_review` project.
 
-| File in `carrie/branching` | Source | Transfer |
+| File in this repository | Source | Transfer |
 |---|---|---|
 | `prompts/p1,p2,p3,p6 + PROMPT_CATALOG.md` | jren-A `prompts/` | imported (these were refined on jren/benchmarking earlier) |
 | `metadata/real_human_samples_no_multiple.json` | jren-A `metadata/` | imported (verbatim) |

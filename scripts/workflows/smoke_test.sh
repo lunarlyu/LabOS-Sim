@@ -2,9 +2,9 @@
 # Cheap end-to-end validation of the live collection path: one model, a few clips,
 # the full-eval camera angles. Run from anywhere; it cd's to the repo root.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
-MODEL="${MODEL:-gemini_3_1_pro}"   # override: MODEL=gpt_5_5 ./shell_scripts/smoke_test.sh
+MODEL="${MODEL:-gemini_3_1_pro}"   # override: MODEL=gpt_5_5 scripts/workflows/smoke_test.sh
 LIMIT="${LIMIT:-3}"
 RUN_ID="${RUN_ID:-smoke_01}"
 
@@ -12,7 +12,7 @@ echo "== build a tiny run list ($LIMIT clips) =="
 mkdir -p data
 head -n "$LIMIT" data/real_human/metadata.jsonl > data/smoke_run_list.jsonl
 
-echo "== P3 multilabel: $MODEL, front+left+right angles, run_id=$RUN_ID =="
+echo "== P2 multilabel: $MODEL, front+left+right angles, run_id=$RUN_ID =="
 python scripts/data_collection/run_multilabel_classification.py \
     --models "$MODEL" --data data/smoke_run_list.jsonl --run-id "$RUN_ID" \
     --camera-views front left right --concurrency 2

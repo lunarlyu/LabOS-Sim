@@ -173,7 +173,9 @@ def main() -> None:
     names = args.condition or list(CONDITIONS)
     runs_root = REPO_ROOT / RUNS_ROOT
     results_root = runs_root / "results"
-    run_list = runs_root / "run_lists" / f"{stamp}_selected_{EXPECTED_SAMPLES}.jsonl"
+    # Every condition uses the same immutable 80-clip sample set. Keep one
+    # canonical run list instead of copying identical JSONL files per prefix.
+    run_list = runs_root / "run_lists" / f"selected_{EXPECTED_SAMPLES}.jsonl"
 
     print(f"vlm={MODEL} parser={PARSER_MODEL} input_mode=image_frames tasks={','.join(TASKS)} "
           f"samples={expected_run_samples}"

@@ -2,7 +2,7 @@
 # Full benchmark run across all models, then process + render.
 # Edit MODELS / CAMS / CONC / RUN_ID as needed. Run from anywhere; it cd's to root.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 MODELS=(gemini_3_1_pro gpt_5_5 claude_opus_4_8 qwen3_vl)   # VLMs (config/models.yaml)
 PARSER_LLM=gpt_5_5_parser                                  # text LLM for P5/P6 parsers

@@ -23,6 +23,9 @@ artifacts are isolated under the top-level `eval_design_choices/` directory.
 The selected cases are in `selected_samples_10_per_type.csv`. Each catalog row
 records all five video files for the case. Every active condition uses the fixed
 `front,left,right` view set. View selection is not an experimental factor.
+The corresponding complete catalog rows are stored once in
+`eval_design_choices/run_lists/selected_80.jsonl`; every condition references
+that canonical run list.
 
 ## Exact comparisons
 
@@ -109,6 +112,8 @@ factor. P3 goes through P5 before subtype scoring. Outputs are:
   `eval_design_choices/results/<run-prefix>_costs/`
 
 `metrics.jsonl` contains call-level runtime, retries, token usage, and cost.
+It is the canonical call-level cost evidence; cost reports retain only the
+derived `cost_summary.csv`.
 Reports are grouped by task: P1 reports binary and balanced accuracy; P2 and
 parsed P3 use exact single-primary-type scoring and per-type statistics. The
 three prompts are never averaged into one headline score.

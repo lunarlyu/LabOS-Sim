@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the multi-label classification task (P3) against one or more VLMs.
+"""Run the multi-label classification task (P2) against one or more VLMs.
 task = {operation}_multilabel_classification.
 """
 from __future__ import annotations

@@ -8,7 +8,6 @@ table" deliverable.
 
 Outputs (to --outdir, default results/direct_stats):
   per_model_metrics.csv   P1 binary metrics or P2/P3 exact primary-type metrics
-  per_model_outcome.csv   deprecated compatibility alias of per_model_metrics.csv
   per_subtype_stats.csv   per type: exact overall accuracy, precision, recall, F1, FPR
   direct_stats.md         human-readable summary
 """
@@ -82,7 +81,7 @@ def per_subtype_stats(long: pd.DataFrame, group_cols: list[str]) -> pd.DataFrame
     return pd.DataFrame(out)
 
 
-def per_model_outcome(long: pd.DataFrame, subtype_df: pd.DataFrame,
+def per_model_metrics(long: pd.DataFrame, subtype_df: pd.DataFrame,
                       group_cols: list[str]) -> pd.DataFrame:
     """Headline task metric: P1 binary outcome; P2/P3 primary failure type."""
     one = long.drop_duplicates(subset=group_cols + ["sample_id"]).copy()
@@ -158,12 +157,11 @@ def main(argv=None) -> None:
         group_cols = ["task", "model"]
 
     subtype_df = per_subtype_stats(long, group_cols)
-    outcome_df = per_model_outcome(long, subtype_df, group_cols)
+    outcome_df = per_model_metrics(long, subtype_df, group_cols)
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     subtype_df.to_csv(args.outdir / "per_subtype_stats.csv", index=False)
     outcome_df.to_csv(args.outdir / "per_model_metrics.csv", index=False)
-    outcome_df.to_csv(args.outdir / "per_model_outcome.csv", index=False)
 
     lines = [
         "# Direct statistics (model-free)\n",
