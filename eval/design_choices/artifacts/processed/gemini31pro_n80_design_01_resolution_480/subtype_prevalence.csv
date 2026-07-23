@@ -1,0 +1,9 @@
+subtype,n_present,n_items,prevalence
+cap_open,10,80,0.125
+tube_drop,10,80,0.125
+tube_empty,10,80,0.125
+vortex_off,10,80,0.125
+wrong_orientation,10,80,0.125
+wrong_rack,10,80,0.125
+rack_flipped,10,80,0.125
+other_failure,0,80,0.0

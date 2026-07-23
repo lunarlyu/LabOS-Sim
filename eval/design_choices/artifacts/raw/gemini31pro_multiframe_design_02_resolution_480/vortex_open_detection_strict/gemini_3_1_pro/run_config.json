@@ -1,0 +1,100 @@
+{
+  "run_id": "gemini31pro_multiframe_design_02_resolution_480",
+  "task": "vortex_open_detection_strict",
+  "model": "gemini_3_1_pro",
+  "model_cfg": {
+    "adapter": "gemini",
+    "role": "vlm",
+    "provider_model_id": "google/gemini-3.1-pro-preview",
+    "api_style": "openai_compatible",
+    "base_url_env": "OPENROUTER_BASE_URL",
+    "api_key_env": "OPENROUTER_API_KEY",
+    "media_transport": "data_uri",
+    "temperature": 0,
+    "max_completion_tokens": 2048,
+    "timeout_s": 180
+  },
+  "data_list": "design_choices/artifacts/run_lists/selected_80.jsonl",
+  "data_root": "data",
+  "camera_views": [
+    "front",
+    "left",
+    "right"
+  ],
+  "max_videos_per_sample": 0,
+  "concurrency": 2,
+  "schema_request": {
+    "enabled": true,
+    "provider_format": "json_schema",
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "open_detection_strict",
+        "strict": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "success",
+                "failure"
+              ]
+            },
+            "observed_errors": {
+              "type": "string",
+              "description": "Comma-separated errors; 'None' iff outcome is success."
+            },
+            "confidence": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "outcome",
+            "observed_errors",
+            "confidence"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  },
+  "defaults": {
+    "media": {
+      "input_type": "image_frames",
+      "camera_views": [
+        "front",
+        "left",
+        "right"
+      ],
+      "max_videos_per_sample": 0,
+      "fairness_profile": "canonical_clip_1080px_30fps",
+      "preprocess": {
+        "transcode": {
+          "enabled": true,
+          "max_width": 1080,
+          "fps": 30,
+          "crf": 28,
+          "preset": "veryfast"
+        },
+        "contact_sheet": {
+          "max_width": 720,
+          "fps": 1,
+          "columns": 4,
+          "rows": 8,
+          "quality": 10
+        },
+        "frames": {
+          "frame_count": 128,
+          "max_width": 480,
+          "quality": 10
+        }
+      }
+    },
+    "call": {
+      "max_retries": 5,
+      "timeout_seconds": 180,
+      "max_completion_tokens": 2048
+    }
+  }
+}
