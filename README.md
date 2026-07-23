@@ -11,15 +11,12 @@ laboratory-automation videos.
 - `config/` and `prompts/`: model registries, defaults, schemas, and prompt text.
 - `data/`: tracked metadata catalogs plus locally downloaded, gitignored videos.
 - `runs/` and `results/`: normal benchmark outputs.
-- `design_choices_experiment/`: design-study definitions, runner, fixed sample
-  manifest, and collaborator-facing report.
-- `eval_design_choices/`: versioned raw evidence, processed tables, metrics, and
-  cost summaries produced by the design study.
+- `design_choices/`: self-contained design study, with experiment definitions
+  under `experiment/` and versioned evidence under `artifacts/`.
 - `docs/ARCHITECTURE.md`: detailed pipeline structure and data flow.
 
-The two design-choice directories are intentionally separate: one contains the
-experiment specification and executable entry points; the other contains the
-resulting evidence. See their local READMEs for details.
+The design study is isolated from normal full-run outputs. See
+`design_choices/README.md` for its internal layout.
 
 ## Common workflows
 
@@ -38,5 +35,5 @@ scripts/workflows/run_full_suite.sh
 Preview the design-choice conditions without making API calls:
 
 ```bash
-.venv/bin/python design_choices_experiment/run_experiment.py --dry-run
+.venv/bin/python design_choices/experiment/run_experiment.py --dry-run
 ```

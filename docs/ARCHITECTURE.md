@@ -97,17 +97,18 @@ LabOS-Sim/
 │       ├── smoke_test.sh                   # cheap live-path validation
 │       └── run_full_suite.sh               # all models × tasks → process → render
 │
-├── design_choices_experiment/      # design-study specification and entry point
-│   ├── run_experiment.py
-│   ├── design_matrix.yaml
-│   ├── selected_samples_10_per_type.csv
-│   └── design_choice_results_brief.md
-│
-├── eval_design_choices/            # versioned evidence produced by that study
-│   ├── run_lists/selected_80.jsonl # one canonical sample set for every condition
-│   ├── raw/                        # predictions, metrics, resolved run configs
-│   ├── processed/                  # normalized detection tables
-│   └── results/                    # direct metrics and cost summaries
+├── design_choices/                 # self-contained VLM design study
+│   ├── README.md
+│   ├── experiment/                 # specification, runner, and report
+│   │   ├── run_experiment.py
+│   │   ├── design_matrix.yaml
+│   │   ├── selected_samples_10_per_type.csv
+│   │   └── design_choice_results_brief.md
+│   └── artifacts/                  # versioned evidence produced by the study
+│       ├── run_lists/selected_80.jsonl # canonical sample set for every condition
+│       ├── raw/                    # predictions, metrics, resolved run configs
+│       ├── processed/              # normalized detection tables
+│       └── results/                # direct metrics and cost summaries
 │
 └── src/labos_benchmark/            # the reusable engine (importable package) — kept lean
     ├── __init__.py
@@ -185,7 +186,7 @@ separate metadata.
 `metadata.jsonl` catalogs and selected run lists are tracked. Standard benchmark
 raw runs and media caches are gitignored. The design study is an explicit
 exception: its raw JSONL evidence, processed tables, and final summaries are
-versioned under `eval_design_choices/`, while its large media cache remains
+versioned under `design_choices/artifacts/`, while its large media cache remains
 gitignored.
 
 **Lean package.** `src/labos_benchmark/` deliberately keeps few modules: cost +
