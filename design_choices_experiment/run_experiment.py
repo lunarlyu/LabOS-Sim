@@ -44,6 +44,17 @@ CONDITIONS = {
         "frame_count": 256, "cap_at_source": True,
         "views": ["front", "left", "right"], "tokens": 2048, "resolution": 720,
     },
+    "frames_adaptive_128": {
+        "frame_count": 128, "cap_at_source": True,
+        "views": ["front", "left", "right"], "tokens": 2048, "resolution": 720,
+    },
+    "frames_hybrid_128_256": {
+        "frame_count": 256,
+        "sampling_policy": "source_length_buckets",
+        "short_threshold": 128,
+        "long_threshold": 256,
+        "views": ["front", "left", "right"], "tokens": 2048, "resolution": 720,
+    },
     "resolution_480": {
         "frame_count": 128,
         "views": ["front", "left", "right"], "tokens": 2048, "resolution": 480,
@@ -92,9 +103,13 @@ def config_for(base: dict, condition: dict) -> dict:
     frames.update({
         "frame_count": condition["frame_count"],
         "cap_at_source": condition.get("cap_at_source", False),
+        "sampling_policy": condition.get("sampling_policy", "fixed"),
         "max_width": condition["resolution"],
         "quality": 10,
     })
+    for key in ("short_threshold", "long_threshold"):
+        if key in condition:
+            frames[key] = condition[key]
     # Pin the experiment transport independently of the shared full-run model
     # registry. Historical design runs used Gemini through OpenRouter; keeping
     # these fields local prevents unrelated registry edits from changing the

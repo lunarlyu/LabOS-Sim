@@ -169,6 +169,44 @@ def extract_uniform_frames(
     return expected
 
 
+def resolve_frame_sample_count(
+    source_frame_counts: list[int],
+    frame_config: dict[str, Any],
+) -> int:
+    """Resolve one shared frame target for all selected views of a clip.
+
+    The default policy returns the configured fixed frame count. The
+    ``source_length_buckets`` policy uses the shortest selected view length
+    ``l`` and returns ``l`` below the short threshold, the short threshold for
+    intermediate clips, and the long threshold for clips with enough genuine
+    frames. Using the minimum keeps every view on the same sampling regime and
+    prevents duplicate padding.
+    """
+    configured = int(frame_config.get("frame_count", 128))
+    policy = str(frame_config.get("sampling_policy", "fixed"))
+    if policy == "fixed":
+        return configured
+    if policy != "source_length_buckets":
+        raise ValueError(f"unknown frame sampling policy: {policy}")
+    if not source_frame_counts:
+        raise ValueError("source_length_buckets requires at least one selected view")
+    if any(count <= 0 for count in source_frame_counts):
+        raise ValueError(f"invalid source frame counts: {source_frame_counts}")
+
+    short = int(frame_config.get("short_threshold", 128))
+    long = int(frame_config.get("long_threshold", 256))
+    if not 0 < short < long:
+        raise ValueError(
+            f"frame thresholds must satisfy 0 < short < long; got {short}, {long}"
+        )
+    minimum = min(source_frame_counts)
+    if minimum < short:
+        return minimum
+    if minimum < long:
+        return short
+    return long
+
+
 def maybe_transcode_videos(
     videos: list[dict[str, Any]],
     cache_dir: Path,
@@ -184,16 +222,27 @@ def maybe_transcode_videos(
     cache_dir = Path(cache_dir)
     if media_config.get("input_type") == "image_frames":
         frame_config = media_config.get("preprocess", {}).get("frames", {})
+        sampling_policy = str(frame_config.get("sampling_policy", "fixed"))
+        source_frame_counts: list[int] = []
+        if sampling_policy == "source_length_buckets":
+            source_frame_counts = [
+                int(imageio_ffmpeg.count_frames_and_secs(str(video["path"]))[0])
+                for video in videos
+            ]
+        target_frame_count = resolve_frame_sample_count(source_frame_counts, frame_config)
         params = {
-            "sampler_version": 1,
+            "sampler_version": 2 if sampling_policy == "source_length_buckets" else 1,
             "max_width": int(frame_config.get("max_width", 720)),
             "quality": int(frame_config.get("quality", 10)),
-            "frame_count": int(frame_config.get("frame_count", 128)),
+            "frame_count": target_frame_count,
         }
+        if sampling_policy != "fixed":
+            params["sampling_policy"] = sampling_policy
         if frame_config.get("cap_at_source", False):
             params["cap_at_source"] = True
         transform_params = {
-            key: value for key, value in params.items() if key != "sampler_version"
+            key: value for key, value in params.items()
+            if key not in {"sampler_version", "sampling_policy"}
         }
         processed: list[dict[str, Any]] = []
         view_names = [
@@ -234,7 +283,15 @@ def maybe_transcode_videos(
                             "api_sha256": file_sha256(frame_path),
                             "delivery": "base64_image_url",
                             "fairness_profile": media_config.get("fairness_profile"),
-                            "frame_sampling": frame_config,
+                            "frame_sampling": {
+                                **frame_config,
+                                "sampling_policy": sampling_policy,
+                                "source_frame_counts": source_frame_counts or None,
+                                "clip_min_source_frames": (
+                                    min(source_frame_counts) if source_frame_counts else None
+                                ),
+                                "target_frame_count": target_frame_count,
+                            },
                             "camera_view": camera_view,
                             "frame_index": index,
                             "actual_frame_count": actual_frame_count,

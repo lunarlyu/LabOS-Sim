@@ -5,12 +5,12 @@ successes and 10 examples from each of seven failure types.
 
 ## 1. Contact sheets vs. independent frames
 
-| Frames | Representation | P1 binary | P2 exact type | P3/P5 exact type | Cost |
-|---:|---|---:|---:|---:|---:|
-| 128 | Contact sheet | 52.5% | 13.8% | 16.3% | $4.88 |
-| 128 | Independent frames | 27.5% | **30.0%** | **18.8%** | $409.44 |
-| 256 | Contact sheet | 50.0% | 17.5% | 8.8% | $4.72 |
-| 256 | Independent frames | 23.8% | **18.8%** | **17.5%** | $770.29 |
+| Frames | Representation | P1 binary | P1 balanced | P2 exact type | P3/P5 exact type | Cost |
+|---:|---|---:|---:|---:|---:|---:|
+| 128 | Contact sheet | 52.5% | **55.7%** | 13.8% | 16.3% | $4.88 |
+| 128 | Independent frames | 27.5% | 50.0% | **30.0%** | **18.8%** | $409.44 |
+| 256 | Contact sheet | 50.0% | 50.0% | 17.5% | 8.8% | $4.72 |
+| 256 | Independent frames | 23.8% | 47.9% | **18.8%** | **17.5%** | $770.29 |
 
 At 256 frames, the contact sheet becomes extremely large. Provider-side
 rescaling or compression may reduce each tile's effective resolution, explaining
@@ -46,78 +46,62 @@ Nearly all successful 2,048-token calls ended with `finish_reason=stop`, so
 
 **Decision: use 2,048 output tokens.**
 
-## 4. 128 vs. 256 independent frames
+## 4. Independent-frame sampling
 
-Adaptive 256 uses all decoded frames below 256 and uniformly samples 256 above
-that limit.
+Fixed 128 and fixed 256 always emit the configured number of frames. Adaptive
+128/256 use all decoded frames below their respective cap. Hybrid uses the
+source length below 128, 128 frames for source lengths 128--255, and 256 frames
+for source lengths at least 256.
 
 | Setting | P1 binary | P1 balanced | P2 exact | P3/P5 exact | Completed cost |
 |---|---:|---:|---:|---:|---:|
-| Fixed 128 | **27.5%** | **50.0%** | **30.0%** | **18.8%** | **$409.44** |
+| Fixed 128 | **27.5%** | 50.0% | **30.0%** | 18.8% | **$409.44** |
 | Fixed 256 | 23.8% | 47.9% | 18.8% | 17.5% | $770.29 |
 | Adaptive 256 | 22.5% | 47.1% | 21.3% | 13.8% | $690.29 |
+| Hybrid | 26.3% | **53.6%** | 16.3% | **20.0%** | $550.97 |
+| Adaptive 128 | 25.0% | 44.3% | 16.3% | 16.3% | $411.86 |
 
-### 4.1 Fixed 256 and duplicated frames
+### 4.1 Results by source length
 
-Fifty clips have fewer than 256 source frames, so fixed 256 duplicates frames.
+Source length is the minimum decoded frame count across front, left, and right.
 
-| Source length | n | Prompt | Fixed 128 | Fixed 256 |
-|---|---:|---|---:|---:|
-| <256 frames | 50 | P1 | **15/50 (30.0%)** | 9/50 (18.0%) |
-| | | P2 exact | **16/50 (32.0%)** | 9/50 (18.0%) |
-| | | P3/P5 | **9/50 (18.0%)** | 7/50 (14.0%) |
-| >=256 frames | 30 | P1 | 7/30 (23.3%) | **10/30 (33.3%)** |
-| | | P2 exact | **8/30 (26.7%)** | 6/30 (20.0%) |
-| | | P3/P5 | 6/30 (20.0%) | **7/30 (23.3%)** |
+| Source length | Prompt | Fixed 128 | Fixed 256 | Adaptive 256 | Hybrid | Adaptive 128 |
+|---|---|---:|---:|---:|---:|---:|
+| <128, n=4 | P1 | 1/4 | 0/4 | **3/4** | 2/4 | 1/4 |
+|  | P2 exact | 0/4 | 0/4 | 0/4 | 0/4 | 0/4 |
+|  | P3/P5 exact | 0/4 | 0/4 | 0/4 | 0/4 | 0/4 |
+| 128--255, n=46 | P1 | **14/46** | 9/46 | 7/46 | 10/46 | 10/46 |
+|  | P2 exact | **16/46** | 9/46 | 8/46 | 10/46 | 6/46 |
+|  | P3/P5 exact | 9/46 | 7/46 | 5/46 | **10/46** | 7/46 |
+| >=256, n=30 | P1 | 7/30 | **10/30** | 8/30 | 9/30 | 9/30 |
+|  | P2 exact | 8/30 | 6/30 | **9/30** | 3/30 | 7/30 |
+|  | P3/P5 exact | 6/30 | **7/30** | 6/30 | 6/30 | 6/30 |
 
-Among clips with at least 256 genuine frames, P1 and P3/P5 improve slightly,
-but P2 decreases.
+### 4.2 Same inputs show that temperature 0 is not deterministic
 
-### 4.2 Adaptive 256 drops most on the 128--255-frame group
+Each block below contains the same samples and byte-identical images across the
+listed settings. Scores are nevertheless different.
 
-| Source length | n | Prompt | Fixed 128 | Adaptive 256 |
-|---|---:|---|---:|---:|
-| <128 frames | 4 | P1 | 1/4 (25.0%) | **3/4 (75.0%)** |
-| | | P2 exact | 0/4 (0.0%) | 0/4 (0.0%) |
-| | | P3/P5 exact | 0/4 (0.0%) | 0/4 (0.0%) |
-| 128--255 frames | 46 | P1 | **14/46 (30.4%)** | 7/46 (15.2%) |
-| | | P2 exact | **16/46 (34.8%)** | 8/46 (17.4%) |
-| | | P3/P5 exact | **9/46 (19.6%)** | 5/46 (10.9%) |
-| >=256 frames | 30 | P1 | 7/30 (23.3%) | **8/30 (26.7%)** |
-| | | P2 exact | 8/30 (26.7%) | **9/30 (30.0%)** |
-| | | P3/P5 exact | 6/30 (20.0%) | 6/30 (20.0%) |
+| Source-length group | Setting with identical input | Frames/view | Identical images per setting | P1 binary | P2 exact | P3/P5 exact |
+|---|---|---:|---:|---:|---:|---:|
+| <128, n=4 | Adaptive 128 | Original (89--110) | 1,218 | 1/4 | 0/4 | 0/4 |
+|  | Adaptive 256 | Original (89--110) | 1,218 | 3/4 | 0/4 | 0/4 |
+|  | Hybrid | Original (89--110) | 1,218 | 2/4 | 0/4 | 0/4 |
+| 128--255, n=46 | Fixed 128 | 128 | 17,664 | 14/46 | 16/46 | 9/46 |
+|  | Adaptive 128 | 128 | 17,664 | 10/46 | 6/46 | 7/46 |
+|  | Hybrid | 128 | 17,664 | 10/46 | 10/46 | 10/46 |
+| >=256, n=30 | Fixed 128 | 128 | 11,520 | 7/30 | 8/30 | 6/30 |
+|  | Adaptive 128 | 128 | 11,520 | 9/30 | 7/30 | 6/30 |
+| >=256, n=30 | Fixed 256 | 256 | 23,040 | 10/30 | 6/30 | 7/30 |
+|  | Adaptive 256 | 256 | 23,040 | 8/30 | 9/30 | 6/30 |
+|  | Hybrid | 256 | 23,040 | 9/30 | 3/30 | 6/30 |
 
-Possible explanations include dilution of brief failure cues by similar frames
-and greater distance between corresponding moments across grouped views. The
-128--255-frame group decreases on all three prompting paths.
-
-### 4.3 Adaptive-256 success bias on P2
-
-| P2 behavior | Fixed 128 | Adaptive 256 |
-|---|---:|---:|
-| Total predicted `success` | 29/80 | 39/80 |
-| True successes correctly predicted | 5/10 | **9/10** |
-| Failures mislabeled as `success` | **24/70** | 30/70 |
-| Failures assigned the exact type | **19/70** | 8/70 |
-
-Fixed 256 nearly doubles observed cost. Adaptive 256 costs 68.6% more than
-fixed 128, while also decreasing all three accuracy measures.
-
-**Decision: use 128 frames/view.**
-
-## Additional note: temperature 0 is not deterministic
-
-For the 30 long clips, fixed and adaptive 256 generated **23,040/23,040
-byte-identical input-image pairs**, but the resulting predictions agreed on
-only:
-
-| Prompt | Identical predictions |
-|---|---:|
-| P1 | 26/30 |
-| P2 primary type | 15/30 |
-| P3/P5 primary type | 24/30 |
-
-Temperature 0 does not make Gemini 3.1 Pro deterministic through OpenRouter.
+Different accuracies from the same images, samples, prompts, and model settings
+show that temperature 0 is not deterministic through OpenRouter; within-block
+differences are run-to-run variation, not sampler effects. Fixed 128 has the
+lowest independent-frame cost and the highest overall P2 exact accuracy, while
+no alternative improves consistently across prompts, so we select **fixed 128
+frames/view**.
 
 ## Notes
 

@@ -32,10 +32,22 @@ stages:
       baseline: {frames_per_view: 128, max_completion_tokens: 2048, max_width_px: 720}
       fixed_256: {frames_per_view: 256, max_completion_tokens: 2048, max_width_px: 720}
       adaptive_256: {frame_cap_per_view: 256, max_completion_tokens: 2048, max_width_px: 720}
+      adaptive_128:
+        status: complete_not_selected
+        policy: {lt_128: source_length, gte_128: 128}
+        max_completion_tokens: 2048
+        max_width_px: 720
+      hybrid_128_256:
+        status: complete_not_selected
+        source_length_basis: minimum_across_selected_views
+        policy: {lt_128: source_length, 128_to_255: 128, gte_256: 256}
+        max_completion_tokens: 2048
+        max_width_px: 720
       resolution_480: {frames_per_view: 128, max_completion_tokens: 2048, max_width_px: 480}
 
 selected_design:
   input_type: image_frames
+  sampling_policy: fixed
   frames_per_view: 128
   camera_views: [front, left, right]
   max_completion_tokens: 2048

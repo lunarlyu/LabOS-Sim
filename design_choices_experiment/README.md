@@ -27,12 +27,14 @@ records all five video files for the case. Every active condition uses the fixed
 ## Exact comparisons
 
 `design_matrix.yaml` records both the historical contact-sheet stage and the
-active independent-frame stage. The active runner compares:
+completed independent-frame stage. The runner can reproduce:
 
 | Comparison | A | B | Held-constant baseline |
 |---|---:|---:|---|
 | Frame budget | 128 uniformly sampled frames | 256 uniformly sampled frames | 3 views, 2048 tokens, 720 px |
 | Adaptive frame cap | 128 uniformly sampled frames | `min(source frames, 256)` | 3 views, 2048 tokens, 720 px |
+| Adaptive 128 cap | Fixed 128 | `min(source frames, 128)` | 3 views, 2048 tokens, 720 px |
+| Hybrid sampler | Fixed 128 | source length if `<128`, 128 if `128--255`, 256 if `>=256` | 3 views, 2048 tokens, 720 px |
 | Per-frame resolution | 480 px maximum width | 720 px maximum width | 128 frames, 3 views, 2048 tokens |
 
 The experiment uses 480 versus the repository's 720 px media default.
@@ -44,6 +46,13 @@ FFmpeg duplicates frames to preserve the fixed input shape. The
 `frames_adaptive_256` condition instead treats 256 as a per-view maximum: shorter
 clips use their source-frame count without duplicate padding, while longer clips
 are uniformly sampled to 256 frames.
+
+The `frames_hybrid_128_256` condition uses the minimum decoded length across the
+three selected views to choose one shared target for the clip: the minimum
+source length below 128, 128 for lengths from 128 through 255, and 256 at or
+above 256. Both this condition and `frames_adaptive_128` have completed direct
+80-sample evaluations. Neither produced a prompt-consistent improvement over
+fixed 128, which remains the selected full-run design.
 
 ## Run through the pipeline
 
@@ -73,6 +82,22 @@ Run only the adaptive 256-frame-cap condition:
   --condition frames_adaptive_256 --run-prefix gemini31pro_adaptive256_design_01
 ```
 
+Run only the adaptive 128-frame-cap condition:
+
+```bash
+.venv/bin/python design_choices_experiment/run_experiment.py \
+  --condition frames_adaptive_128 \
+  --run-prefix gemini31pro_adaptive128_design_01
+```
+
+Run only the hybrid sampler condition:
+
+```bash
+.venv/bin/python design_choices_experiment/run_experiment.py \
+  --condition frames_hybrid_128_256 \
+  --run-prefix gemini31pro_hybrid_design_01
+```
+
 Each condition runs all three prompts and changes one baseline
 factor. P3 goes through P5 before subtype scoring. Outputs are:
 
@@ -93,5 +118,5 @@ three prompts are never averaged into one headline score.
 - `design_choice_results_brief.md`: presentation-facing tables.
 
 Historical 80-sample contact-sheet artifacts are retained as the staged
-comparison preceding the active independent-frame experiment. The active runner
-only creates independent-frame Gemini 3.1 Pro conditions.
+comparison preceding the independent-frame experiment. The runner only creates
+independent-frame Gemini 3.1 Pro conditions.
