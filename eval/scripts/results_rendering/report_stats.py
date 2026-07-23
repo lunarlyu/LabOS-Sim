@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 
 EVAL_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = EVAL_ROOT.parent
 
 
 def _auroc(labels: np.ndarray, scores: np.ndarray) -> float:
@@ -165,9 +166,15 @@ def main(argv=None) -> None:
     subtype_df.to_csv(args.outdir / "per_subtype_stats.csv", index=False)
     outcome_df.to_csv(args.outdir / "per_model_metrics.csv", index=False)
 
+    source_path = args.table.resolve()
+    try:
+        source_display = source_path.relative_to(REPO_ROOT.resolve())
+    except ValueError:
+        source_display = source_path
+
     lines = [
         "# Direct statistics (model-free)\n",
-        f"- Source: `{args.table}`",
+        f"- Source: `{source_display}`",
         f"- Grouping: {' x '.join(group_cols)}",
         f"- Models: {', '.join(sorted(long['model'].unique()))}",
         f"- Subtypes: {', '.join(sorted(long['subtype'].unique()))}\n",

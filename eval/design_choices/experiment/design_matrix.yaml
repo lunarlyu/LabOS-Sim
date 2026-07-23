@@ -21,7 +21,6 @@ stages:
     conditions:
       baseline: {frames_per_view: 128, max_completion_tokens: 2048, max_width_px: 720}
       frames_256: {frames_per_view: 256, max_completion_tokens: 2048, max_width_px: 720}
-      tokens_4096: {frames_per_view: 128, max_completion_tokens: 4096, max_width_px: 720}
       resolution_480: {frames_per_view: 128, max_completion_tokens: 2048, max_width_px: 480}
 
   independent_frames:

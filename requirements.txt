@@ -1,16 +1,15 @@
 # Core engine
 pyyaml>=6.0
 requests>=2.31
-openai>=1.40          # used by openai_compatible / gemini adapters
 google-genai>=1.0     # used when Gemini is configured for its native API
 pandas>=2.0
 numpy>=1.24
 tabulate>=0.9
 
-# Data ingestion (scripts/data_ingestion/download_real_human.py)
+# Data ingestion (eval/scripts/data_ingestion/download_real_human.py)
 huggingface_hub>=0.23
 
-# Analysis (results_rendering/fit_sdt_irt.py)
+# Analysis (eval/scripts/results_rendering/fit_sdt_irt.py)
 pymc>=5.10
 arviz>=0.17
 

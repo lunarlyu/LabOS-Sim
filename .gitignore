@@ -4,7 +4,6 @@ data/**
 !data/**/
 !data/**/metadata.jsonl
 !data/**/source_metadata.json
-!data/**/*run_list*.jsonl
 
 # Generated evaluation run artifacts (keep eval/runs/processed/ trackable)
 eval/runs/raw/

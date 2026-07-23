@@ -40,6 +40,15 @@ DEFAULT_RUNS_ROOT = EVAL_ROOT / "runs"
 DEFAULT_DATA_ROOT = REPO_ROOT / "data"
 
 
+def _portable_path(path: str | Path) -> str:
+    """Record repository paths without embedding a contributor's home directory."""
+    resolved = Path(path).resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT.resolve()))
+    except ValueError:
+        return str(resolved)
+
+
 # --------------------------------------------------------------------------- #
 # Config
 # --------------------------------------------------------------------------- #
@@ -206,9 +215,10 @@ def collect(
     )
     atomic_write_json(run_dir / "run_config.json",
                       {"run_id": run_id, "task": task, "model": model_name, "model_cfg": model_cfg,
-                       "data_list": str(data_list), "data_root": str(data_root),
+                       "data_list": _portable_path(data_list),
+                       "data_root": _portable_path(data_root),
                        "camera_views": cams, "max_videos_per_sample": max_videos,
-                       "media_cache_root": str(cache_root),
+                       "media_cache_root": _portable_path(cache_root),
                        "concurrency": concurrency, "schema_request": schema_request,
                        "defaults": defaults})
 
@@ -298,7 +308,8 @@ def run_parser(
     run_dir = _new_run_dir(run_id, task, vlm_name, llm_name, runs_root=runs_root)
     atomic_write_json(run_dir / "run_config.json",
                       {"run_id": run_id, "task": task, "vlm": vlm_name, "llm": llm_name,
-                       "source_run_dir": str(source_run_dir), "model_cfg": model_cfg,
+                       "source_run_dir": _portable_path(source_run_dir),
+                       "model_cfg": model_cfg,
                        "schema_request": schema_request})
 
     rows = list(_latest_rows(source_run_dir / "predictions.jsonl").values())

@@ -5,7 +5,7 @@ This script turns the benchmark's raw predictions into a single clean, tidy
 "long" table -- one row per ``(model, sample_id, subtype)`` cell -- that is both
 (a) human-inspectable as a summary of the raw labeling results, and (b) the exact
 input the SDT-IRT fitter (``fit_sdt_irt.py``) consumes. Stage 2 (the PyMC fit)
-reads ``flags_long.csv`` and never touches the raw runs again.
+reads ``detections_long.csv`` and never touches the raw runs again.
 
 It reads **either** task schema:
 
@@ -25,7 +25,7 @@ and either input form:
     (the raw run + ground-truth metadata, for either schema).
 
 Outputs (to --outdir):
-  flags_long.csv            one row per (model, sample_id, subtype): is_present,
+  detections_long.csv       one row per (model, sample_id, subtype): is_present,
                             flagged, channel, confidence, outcomes, status
   per_model_summary.csv     per-model hits/misses/false-alarms, recall, FPR
   per_model_subtype.csv     same, split by subtype (the SDT cells)
@@ -49,7 +49,7 @@ from pathlib import Path
 
 import pandas as pd
 
-# Canonical failure subtypes (mirrors prompts/PROMPT_CATALOG.md; repeated_steps removed).
+# Canonical failure subtypes (mirrors eval/prompts/PROMPT_CATALOG.md).
 DEFAULT_FAILURE_LABELS = [
     "cap_open",
     "tube_drop",
@@ -95,10 +95,23 @@ def _primary_type(fm, outcome: str | None = None) -> str:
     return SUCCESS_LABEL if outcome == SUCCESS_LABEL else "unclassified_failure"
 
 
+def _load_metadata_samples(metadata: Path) -> list[dict]:
+    """Load either a legacy JSON object/list or the canonical JSONL catalog."""
+    text = metadata.read_text(encoding="utf-8")
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        return [json.loads(line) for line in text.splitlines() if line.strip()]
+    if isinstance(parsed, dict) and "samples" in parsed:
+        return list(parsed["samples"])
+    if isinstance(parsed, list):
+        return parsed
+    raise ValueError(f"unsupported metadata format: {metadata}")
+
+
 def read_jsonl_run(jsonl: Path, metadata: Path) -> tuple[list[dict], str]:
     """Read a raw predictions.jsonl + ground-truth metadata -> records, schema."""
-    meta = json.loads(metadata.read_text(encoding="utf-8"))
-    samples = meta["samples"] if isinstance(meta, dict) and "samples" in meta else meta
+    samples = _load_metadata_samples(metadata)
     truth_by_id = {
         s["sample_id"]: _truth_set_from_failure_modes(s.get("failure_modes"))
         for s in samples
@@ -162,8 +175,7 @@ def read_runs_root(runs_root: Path, metadata: Path | None = None,
     """
     truth_by_id: dict[str, set] = {}
     if metadata is not None:
-        meta = json.loads(Path(metadata).read_text(encoding="utf-8"))
-        samples = meta["samples"] if isinstance(meta, dict) and "samples" in meta else meta
+        samples = _load_metadata_samples(Path(metadata))
         truth_by_id = {s["sample_id"]: _truth_set_from_failure_modes(s.get("failure_modes"))
                        for s in samples}
 

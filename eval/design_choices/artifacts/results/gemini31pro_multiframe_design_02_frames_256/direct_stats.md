@@ -1,6 +1,6 @@
 # Direct statistics (model-free)
 
-- Source: `design_choices/artifacts/processed/gemini31pro_multiframe_design_02_frames_256/detections_long.csv`
+- Source: `eval/design_choices/artifacts/processed/gemini31pro_multiframe_design_02_frames_256/detections_long.csv`
 - Grouping: task x model
 - Models: gemini_3_1_pro
 - Subtypes: cap_open, other_failure, rack_flipped, tube_drop, tube_empty, vortex_off, wrong_orientation, wrong_rack

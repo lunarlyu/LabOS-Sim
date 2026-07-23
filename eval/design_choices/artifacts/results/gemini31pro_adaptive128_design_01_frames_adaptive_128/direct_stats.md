@@ -1,6 +1,6 @@
 # Direct statistics (model-free)
 
-- Source: `/Users/luna/Documents/LabOS-sim/carrie-branching/design_choices/artifacts/processed/gemini31pro_adaptive128_design_01_frames_adaptive_128/detections_long.csv`
+- Source: `eval/design_choices/artifacts/processed/gemini31pro_adaptive128_design_01_frames_adaptive_128/detections_long.csv`
 - Grouping: task x model
 - Models: gemini_3_1_pro
 - Subtypes: cap_open, other_failure, rack_flipped, tube_drop, tube_empty, vortex_off, wrong_orientation, wrong_rack
