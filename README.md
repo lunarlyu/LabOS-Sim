@@ -5,38 +5,34 @@ laboratory-automation videos.
 
 ## Repository map
 
-- `src/labos_benchmark/`: reusable dataset, media, provider, and runner logic.
-- `scripts/`: command-line entry points, including `scripts/workflows/` for
-  end-to-end smoke and full-suite runs.
-- `config/` and `prompts/`: model registries, defaults, schemas, and prompt text.
-- `data/`: tracked source metadata and pipeline catalogs plus locally
-  downloaded, gitignored videos.
-- `runs/` and `results/`: normal benchmark outputs; `results/README.md`
-  documents the full-run output contract.
-- `design_choices/`: self-contained design study, with experiment definitions
-  under `experiment/`, a collaborator summary in `RESULTS.md`, and versioned
-  evidence under `artifacts/`.
-- `docs/ARCHITECTURE.md`: detailed pipeline structure and data flow.
+- `data/`: project-level datasets. Metadata is tracked; downloaded videos are
+  gitignored.
+- `eval/`: the complete evaluation workspace: configuration, prompts, scripts,
+  reusable source package, design-choice study, documentation, and results.
+- `eval/src/labos_benchmark/`: reusable evaluation engine.
+- `eval/design_choices/`: design study, collaborator summary, and versioned
+  evidence.
+- `eval/docs/ARCHITECTURE.md`: detailed evaluation pipeline and data flow.
 
 The design study is isolated from normal full-run outputs. See
-`design_choices/README.md` for its internal layout.
+`eval/design_choices/README.md` for its internal layout.
 
 ## Common workflows
 
 Run a small end-to-end validation:
 
 ```bash
-scripts/workflows/smoke_test.sh
+eval/scripts/workflows/smoke_test.sh
 ```
 
 Run the full benchmark suite:
 
 ```bash
-scripts/workflows/run_full_suite.sh
+eval/scripts/workflows/run_full_suite.sh
 ```
 
 Preview the design-choice conditions without making API calls:
 
 ```bash
-.venv/bin/python design_choices/experiment/run_experiment.py --dry-run
+.venv/bin/python eval/design_choices/experiment/run_experiment.py --dry-run
 ```

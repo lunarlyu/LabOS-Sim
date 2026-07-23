@@ -6,12 +6,12 @@ data/**
 !data/**/source_metadata.json
 !data/**/*run_list*.jsonl
 
-# Generated run artifacts (raw predictions + media caches; keep runs/processed/ trackable)
-runs/raw/
-runs/.media_cache/
+# Generated evaluation run artifacts (keep eval/runs/processed/ trackable)
+eval/runs/raw/
+eval/runs/.media_cache/
 
 # Regenerable preprocessed media.
-.cache/
+eval/.cache/
 
 # Local paper draft; publish separately when submission text is ready.
 paper/icml_appendix_design_choices.md
