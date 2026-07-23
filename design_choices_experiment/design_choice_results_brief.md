@@ -84,9 +84,9 @@ listed settings. Scores are nevertheless different.
 
 | Source-length group | Setting with identical input | Frames/view | Identical images per setting | P1 binary | P2 exact | P3/P5 exact |
 |---|---|---:|---:|---:|---:|---:|
-| <128, n=4 | Adaptive 128 | Original (89--110) | 1,218 | 1/4 | 0/4 | 0/4 |
-|  | Adaptive 256 | Original (89--110) | 1,218 | 3/4 | 0/4 | 0/4 |
-|  | Hybrid | Original (89--110) | 1,218 | 2/4 | 0/4 | 0/4 |
+| <128, n=4 | Adaptive 128 | Original | 1,218 | 1/4 | 0/4 | 0/4 |
+|  | Adaptive 256 | Original | 1,218 | 3/4 | 0/4 | 0/4 |
+|  | Hybrid | Original | 1,218 | 2/4 | 0/4 | 0/4 |
 | 128--255, n=46 | Fixed 128 | 128 | 17,664 | 14/46 | 16/46 | 9/46 |
 |  | Adaptive 128 | 128 | 17,664 | 10/46 | 6/46 | 7/46 |
 |  | Hybrid | 128 | 17,664 | 10/46 | 10/46 | 10/46 |
