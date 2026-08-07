@@ -81,6 +81,73 @@ and criterion across independent families.
 Within-family pairs (Opus/Sonnet, Pro/Flash) double as a validation figure:
 `alpha` should track scale within a family.
 
+### Roster details: price, context, native-video support, capability prior
+
+OpenRouter list data (2026-08-07). "AA-intel" = Artificial Analysis
+intelligence index as republished in the OpenRouter catalog (text-reasoning
+composite; see "How ability tiers were assigned" below).
+
+| Model | $/M in | $/M out | ctx | Native video input | AA-intel |
+|---|---:|---:|---:|---|---:|
+| gemini-3.1-pro-preview (anchor) | 2.00 | 12.00 | 1M | **yes** | 47.7 |
+| gpt-5.5 | 5.00 | 30.00 | 1M | no — frames only | 56.3 |
+| claude-opus-4.8 | 5.00 | 25.00 | 1M | no — frames only (+~100-image/request cap) | 57.3 |
+| grok-4.5 | 2.00 | 6.00 | 500k | no — frames only | 55.8 |
+| gemini-3-flash-preview | 0.50 | 3.00 | 1M | **yes** | — |
+| claude-sonnet-5 | 2.00 | 10.00 | 1M | no — frames only (+image cap) | 55.3 |
+| kimi-k3 | 3.00 | 15.00 | 1M | no — frames only | 59.7 |
+| qwen3.8-max | 2.00 | 6.00 | 1M | **yes** | 58.1 |
+| qwen3.7-plus | 0.32 | 1.28 | 1M | no — frames only | 39.4 |
+| gemini-3.5-flash-lite | 0.30 | 2.50 | 1M | **yes** | 37.4 |
+| qwen3-vl-8b (floor) | 0.12 | 0.45 | 262k | no — frames only | — |
+
+(Catalog corrections vs. §2 above: claude-opus-4.8 and gpt-5.5 are 1M-context
+on OpenRouter, so token count is NOT their binding constraint — Anthropic's
+per-request image cap is, for the Claude tier.)
+
+### Do any of them take the videos directly?
+
+Only the Gemini family and qwen3.8-max advertise native video input. Even for
+those, the benchmark still sends **frames, not video files**, for two reasons:
+
+1. **Transport.** The pipeline ships media as base64 data-URIs through
+   OpenRouter/Arena. Three raw 20 s clips are ~75–100 MB base64 — over
+   practical request limits. Native video needs provider file-upload APIs
+   (e.g. the google-genai File API; `requirements.txt` already carries the
+   dependency), a per-provider code path we haven't built.
+2. **Fairness.** The design-choice study's fairness profile feeds *identical
+   inputs* to every model. If Gemini got true video (with motion) while
+   Claude/GPT got 128 snapshots, ability differences would be confounded with
+   input-pipeline differences — exactly what the SDT-IRT fit must not absorb
+   into `alpha`. A "native-video lane" is a possible future condition for the
+   video-capable subset, and would likely help motion subtypes
+   (`vortex_off`, `tube_drop`), but it is a new design factor, not a default.
+
+So: every roster model runs on the same trimmed-frame diet (128/view today;
+fewer under budget option (b)). "Native video" is a capability note, not a
+plan.
+
+### How ability tiers were assigned
+
+The tiers are **priors used to guarantee ability spread**, not measurements —
+the IRT fit's `alpha` is the measurement. Sources, in decreasing weight:
+
+1. **Our own runs.** The v1 pilot measured model behavior directly
+   (claude-opus-4.8 most wording-sensitive; qwen3-vl-8b degenerate — always
+   `success`; gemini success-biased on free tasks). The v2 screen measured the
+   within-family gap (Flash P2 exact 0.175 vs Pro 0.30; Flash P1 failure
+   recall 0.029).
+2. **Within-family scale** (Pro > Flash, Opus > Sonnet) — the safest prior,
+   and the roster includes both pairs precisely to *test* it via `alpha`.
+3. **Public composite indices** (AA-intel above) — text-reasoning composites,
+   NOT video-perception scores; note gemini-3.1-pro scores lowest of the
+   frontier tier there while being our strongest measured video model. This
+   mismatch is exactly why tier labels are held loosely.
+
+Mis-ranking a model ex ante is harmless to the fit: M2 only needs the roster
+to span a wide ability range, and surprises (a "mid" model fitting frontier
+`alpha`) are findings, not errors.
+
 ## 4. Cost model
 
 Measured anchor: Gemini 3.1 Pro at full design ≈ **$137 per prompt-task per
@@ -117,5 +184,5 @@ Scaling rules of thumb:
   model before adding to roster).
 - Arena billing is not returned per call; if exact spend tracking matters,
   run OR for the roster suite and reserve Arena for screens/dev runs.
-- `gpt-5.5` (non-pro) context window unverified against the 420k full design;
-  under option (b) this is moot.
+- ~~`gpt-5.5` (non-pro) context window unverified~~ resolved: 1M on
+  OpenRouter (roster details table) — full design fits.
