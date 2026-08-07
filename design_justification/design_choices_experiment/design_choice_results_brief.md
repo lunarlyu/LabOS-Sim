@@ -105,6 +105,46 @@ fixed 128, while also decreasing all three accuracy measures.
 
 **Decision: use 128 frames/view.**
 
+## 5. View ablation: 3 vs 2 vs 1 camera views (added 2026-08-07)
+
+Motivation: input cost scales linearly with view count — the largest cost
+lever for the planned multi-model roster (`docs/MODEL_ROSTER_AND_BUDGET.md`).
+Same 80 clips, same prompts (committed B), 128 frames/view, 720 px.
+
+| Views | P1 acc / balanced | P2 exact | P3/P5 exact | Cost |
+|---|---:|---:|---:|---:|
+| front+left+right (baseline) | 0.275 / 0.500 | **0.300** | 0.188 | $409.44 |
+| front+left | 0.300 / 0.514 | 0.238 | **0.213** | $281.75 |
+| front only | **0.313** / **0.521** | 0.225 | 0.200 | **$71.75** |
+
+Per-subtype P2 recall shows where side views actually matter:
+
+| Subtype | 3 views | front+left | front only |
+|---|---:|---:|---:|
+| wrong_rack | **0.6** | 0.4 | **0.0** |
+| rack_flipped | **0.4** | 0.1 | 0.3 |
+| tube_empty | 0.6 | **0.8** | 0.6 |
+| tube_drop | 0.2 | 0.0 | **0.5** |
+| success (correctly clean) | **0.5** | 0.4 | 0.2 |
+| cap_open / vortex_off / wrong_orientation | ≤0.2 everywhere | | |
+
+Reading (with the §"temperature 0" caveat that single-run deltas of this size
+sit near the noise floor): headline P1 and P3/P5 metrics do NOT degrade with
+fewer views; P2 exact declines monotonically (0.300 → 0.238 → 0.225), driven
+almost entirely by **rack-related subtypes** — `wrong_rack` recall falls
+0.6 → 0.4 → 0.0, the clearest dose-response in the table and consistent with
+rack identity being visible mainly from the side cameras. Success-clip
+discrimination also erodes (0.5 → 0.2), i.e. fewer views produce more
+hallucinated failure flags.
+
+**Implication:** front-only is NOT safe for the benchmark's headline runs
+(it blinds `wrong_rack` and inflates clean-clip false alarms), but is a
+defensible cheap tier for screening/dev runs at ~1/6 the baseline cost.
+front+left preserves partial side-view signal at 2/3 cost. Recommendation:
+keep **3 views for scored benchmark runs**; use fewer views only for
+development screens, and revisit if a repeat-run noise study tightens the
+floor.
+
 ## Additional note: temperature 0 is not deterministic
 
 For the 30 long clips, fixed and adaptive 256 generated **23,040/23,040

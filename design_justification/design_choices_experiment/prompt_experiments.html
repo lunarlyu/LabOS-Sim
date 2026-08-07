@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>prompt_experiments.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="prompt-experiments--why-and-how-the-prompts-were-updated">Prompt experiments — why and how the prompts were updated</h1>
+<p>Companion note to the VLM design-choice experiment. The design-choice study
+holds the evaluation prompts constant and varies media/generation settings;
+this note records the experiments behind the prompt versions themselves, since
+the raw prompt-ablation artifacts live in <code>experiments/</code> which is gitignored
+(scratch experiments are never committed). Full artifacts are on Carrie's
+machine at <code>experiments/prompt_ablation/</code> — ask if you want the raw runs.</p>
+<h2 id="timeline-of-prompt-changes">Timeline of prompt changes</h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Change</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026-06-27/28</td>
+<td>Restructure: scope all prompts to the single target tube, drop <code>repeated_steps</code> from the taxonomy (8 modes), split middle level into strict/error-aware (P3→P5 parser) and free/error-unaware (P4→P6 parser)</td>
+<td>commits <code>def05dd</code>, <code>f3a822d</code></td>
+</tr>
+<tr>
+<td>2026-07-01</td>
+<td><strong>Template-copying fix + Anthropic schema fix</strong> (details below)</td>
+<td>commit <code>cb24f0b</code></td>
+</tr>
+<tr>
+<td>2026-07-08</td>
+<td><strong>Prompt-ablation experiment</strong> (B vs V1 vs V2 per prompt, 3 models, 10 clips); winners for P4 and P6 applied to <code>prompts/</code></td>
+<td>this note; local <code>experiments/prompt_ablation/</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="1-the-template-copying-fix-2026-07-01-cb24f0b">1. The template-copying fix (2026-07-01, <code>cb24f0b</code>)</h2>
+<p><strong>Problem observed.</strong> All six prompts presented the required output as a
+filled-in example JSON (<code>&quot;confidence&quot;: 0.0</code>, <code>&quot;reasoning&quot;: &quot;Brief visual evidence.&quot;</code>). Weaker VLMs copied the literals verbatim instead of computing
+values — confidence came back a constant <code>0.0</code> on every clip, making the
+calibration diagnostic useless.</p>
+<p><strong>Fix.</strong> All six output blocks were rewritten as placeholder schemas
+(<code>&lt;number 0.0-1.0: your certainty...&gt;</code>) with an explicit &quot;replace every value —
+do not copy the placeholder text&quot; instruction.</p>
+<p><strong>Second fix in the same commit.</strong> <code>minimum</code>/<code>maximum</code> were dropped from the
+confidence field in the structured-output JSON schema: Anthropic's validator
+(via OpenRouter) rejects those keywords on <code>number</code> types with a 400, which
+failed every <code>claude_opus_4_8</code> call. The 0.0–1.0 range is now stated in the
+prompt text instead.</p>
+<p><strong>Note for the design-choice runs.</strong> All <code>eval_design_choices</code> runs used the
+post-fix prompts: the P1/P2/P3/P5 files were not modified after <code>cb24f0b</code>, the
+recorded <code>run_config.json</code> schemas carry the min/max-free confidence field, and
+predicted confidences vary per clip (0.85–1.0) instead of the pre-fix constant
+0.0. So the design-choice conclusions are on the current committed prompt
+versions.</p>
+<h2 id="2-the-prompt-ablation-experiment-2026-07-08">2. The prompt-ablation experiment (2026-07-08)</h2>
+<p><strong>Question.</strong> For each prompt P1–P6, does a reworded variant beat the current
+wording (&quot;B&quot;)? Each variant encodes one testable hypothesis.</p>
+<p><strong>Setup.</strong></p>
+<ul>
+<li>Models: <code>qwen3_vl</code>, <code>claude_opus_4_8</code>, <code>gemini_3_1_pro</code>; parsers use <code>gpt_5_5_parser</code>.</li>
+<li>Data: 10 clips — 3 success + 7 failures, one per subtype.</li>
+<li>Candidates: B (verbatim post-<code>cb24f0b</code> prompt) + V1 + V2 per prompt.</li>
+<li>Scored from raw predictions; parser <code>ambiguous</code> counts as a miss (so a parser
+cannot dodge by answering <code>ambiguous</code>).</li>
+<li>Metric: mean balanced accuracy across the 3 models (macro-F1 tie-break;
+prefer B on ties — no change without gain).</li>
+<li>720 calls, ~$13.45.</li>
+</ul>
+<p><strong>Hypotheses per variant.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Prompt</th>
+<th>V1</th>
+<th>V2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1 closed binary</td>
+<td>High-specificity: &quot;fail only on a clearly visible violation, else success&quot;</td>
+<td>High-sensitivity: explicit 5-step checklist, fail if ANY step violated</td>
+</tr>
+<tr>
+<td>P2 multilabel</td>
+<td>High-precision: flag a subtype only when directly/clearly seen</td>
+<td>High-recall: scan every subtype one-by-one</td>
+</tr>
+<tr>
+<td>P3 strict</td>
+<td>Decisive per-step error listing naming the physical object</td>
+<td>Anchor each error phrase to object+defect for cleaner parser mapping</td>
+</tr>
+<tr>
+<td>P4 free</td>
+<td>Detailed description, invite noting deviations (not framed as error hunt)</td>
+<td>Structured per-step narration of the 5 protocol steps</td>
+</tr>
+<tr>
+<td>P5 strict parser</td>
+<td>Commit bias: map every error phrase to closest subtype; <code>ambiguous</code> only for noise</td>
+<td>V1 + explicit synonym→subtype guide</td>
+</tr>
+<tr>
+<td>P6 free parser</td>
+<td>Infer failures from described deviations; commit over <code>ambiguous</code></td>
+<td>V1 + explicit synonym→subtype guide</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Results</strong> (mean balanced accuracy across models; <code>ambig</code> = parser <code>ambiguous</code> count):</p>
+<table>
+<thead>
+<tr>
+<th>Prompt</th>
+<th style="text-align:right">B</th>
+<th style="text-align:right">V1</th>
+<th style="text-align:right">V2</th>
+<th>Winner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td style="text-align:right">0.484</td>
+<td style="text-align:right"><strong>0.587</strong></td>
+<td style="text-align:right">0.508</td>
+<td>V1</td>
+</tr>
+<tr>
+<td>P2</td>
+<td style="text-align:right">0.460</td>
+<td style="text-align:right"><strong>0.524</strong></td>
+<td style="text-align:right">0.500</td>
+<td>V1 (marginal)</td>
+</tr>
+<tr>
+<td>P3</td>
+<td style="text-align:right"><strong>0.587</strong></td>
+<td style="text-align:right">0.532</td>
+<td style="text-align:right">0.532</td>
+<td>B — keep</td>
+</tr>
+<tr>
+<td>P4</td>
+<td style="text-align:right">0.357 (ambig 9)</td>
+<td style="text-align:right">0.460 (5)</td>
+<td style="text-align:right"><strong>0.643</strong> (2)</td>
+<td>V2 (strong)</td>
+</tr>
+<tr>
+<td>P5</td>
+<td style="text-align:right">0.587</td>
+<td style="text-align:right">0.587</td>
+<td style="text-align:right"><strong>0.587</strong></td>
+<td>tie; V2 wins only on subtype macro-F1</td>
+</tr>
+<tr>
+<td>P6</td>
+<td style="text-align:right">0.357 (ambig 9)</td>
+<td style="text-align:right">0.429 (3)</td>
+<td style="text-align:right"><strong>0.476</strong> (1)</td>
+<td>V2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Caveats (important).</strong></p>
+<ul>
+<li>n = 10 clips: balanced-accuracy deltas ≤ ~0.10 are within sampling noise.
+Only P4 (Δ+0.29), P6 (Δ+0.12), and borderline P1 (Δ+0.10) are sizable.</li>
+<li>Effects are driven almost entirely by <code>claude_opus_4_8</code>: <code>qwen3_vl</code> predicts
+<code>success</code> regardless of wording, and <code>gemini_3_1_pro</code> is success-biased on
+the free tasks. &quot;Optimal wording&quot; mostly means wording that keeps the capable
+model from over-flagging (P1) or collapsing to <code>ambiguous</code> (P4/P6).</li>
+<li>Biggest, most robust win: the free / error-unaware path (P4→P6). The baseline
+wording made Opus answer <code>ambiguous</code> on 9/10 clips (unusable); the structured
+per-step narration + commit-over-ambiguous variants make it produce scorable,
+mostly-correct judgments.</li>
+</ul>
+<h2 id="3-what-was-adopted">3. What was adopted</h2>
+<table>
+<thead>
+<tr>
+<th>Prompt</th>
+<th>Decision</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P4 free</td>
+<td><strong>V2 adopted</strong> into <code>prompts/p4_open_detection_free.md</code></td>
+<td>Δ+0.29, fixes the unusable <code>ambiguous</code> collapse</td>
+</tr>
+<tr>
+<td>P6 free parser</td>
+<td><strong>V2 adopted</strong> into <code>prompts/p6_open_detection_free_parser.md</code></td>
+<td>Δ+0.12, ambig 9→1</td>
+</tr>
+<tr>
+<td>P3 strict</td>
+<td>Keep B</td>
+<td>B won outright</td>
+</tr>
+<tr>
+<td>P5 strict parser</td>
+<td>Keep B</td>
+<td>Outcome-identical tie; not worth churn</td>
+</tr>
+<tr>
+<td>P1 closed binary</td>
+<td><strong>Not yet adopted</strong> (V1 won, Δ+0.10)</td>
+<td>Right at the noise floor for n=10; want confirmation on a larger sample (e.g. the 80-case design-choice selection) before changing an Easy-level prompt mid-benchmark</td>
+</tr>
+<tr>
+<td>P2 multilabel</td>
+<td><strong>Not yet adopted</strong> (V1 won, Δ+0.06)</td>
+<td>Marginal; same reasoning as P1</td>
+</tr>
+</tbody>
+</table>
+<p>Consequence for the design-choice experiment: its three evaluation prompts
+(P1, P2, P3+P5) are all still the <code>cb24f0b</code> versions, so nothing in the
+adopted P4/P6 update affects those results. If we later adopt P1-V1/P2-V1, the
+design-choice baselines would need a re-run on the affected tasks — one more
+reason to confirm on a larger sample first.</p>
+
+</body>
+</html>

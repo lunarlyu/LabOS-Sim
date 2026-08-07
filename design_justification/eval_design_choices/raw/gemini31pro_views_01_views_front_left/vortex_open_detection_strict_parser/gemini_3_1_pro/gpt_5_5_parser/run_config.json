@@ -1,0 +1,122 @@
+{
+  "run_id": "gemini31pro_views_01_views_front_left",
+  "task": "vortex_open_detection_strict_parser",
+  "vlm": "gemini_3_1_pro",
+  "llm": "gpt_5_5_parser",
+  "source_run_dir": "/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_left/vortex_open_detection_strict/gemini_3_1_pro",
+  "model_cfg": {
+    "adapter": "openai_compatible",
+    "role": "llm",
+    "provider_model_id": "openai/gpt-5.5",
+    "base_url_env": "OPENROUTER_BASE_URL",
+    "api_key_env": "OPENROUTER_API_KEY",
+    "temperature": 0,
+    "timeout_s": 180,
+    "max_completion_tokens": 2048
+  },
+  "schema_request": {
+    "enabled": true,
+    "provider_format": "json_schema",
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "open_detection_strict_parser",
+        "strict": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "success",
+                "failure",
+                "ambiguous"
+              ]
+            },
+            "failure_modes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "cap_open",
+                  "tube_drop",
+                  "tube_empty",
+                  "vortex_off",
+                  "wrong_orientation",
+                  "wrong_rack",
+                  "rack_flipped",
+                  "other_failure"
+                ]
+              }
+            },
+            "confidence": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "null when the source model gave none."
+            },
+            "reasoning": {
+              "type": "string"
+            },
+            "additional_failures": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "evidence": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "description",
+                  "evidence"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Non-empty iff 'other_failure' is in failure_modes."
+            },
+            "ambiguous_mentions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "candidate_modes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "why": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text",
+                  "candidate_modes",
+                  "why"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "outcome",
+            "failure_modes",
+            "confidence",
+            "reasoning",
+            "additional_failures",
+            "ambiguous_mentions"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

@@ -11,7 +11,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPERIMENT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
@@ -29,7 +29,7 @@ TASKS = [
     "vortex_open_detection_strict",      # P3; normalized by P5 below
 ]
 PARSER_TASK = "vortex_open_detection_strict_parser"
-RUNS_ROOT = Path("eval_design_choices")
+RUNS_ROOT = Path("design_justification/eval_design_choices")
 
 CONDITIONS = {
     "baseline_f128_views3_tok2048_res720": {
@@ -47,6 +47,18 @@ CONDITIONS = {
     "resolution_480": {
         "frame_count": 128,
         "views": ["front", "left", "right"], "tokens": 2048, "resolution": 480,
+    },
+    # View ablation: input cost scales linearly with view count, so if fewer
+    # views hold accuracy, every future run (incl. the multi-model roster)
+    # gets proportionally cheaper. Compare against the committed 3-view
+    # baseline run. Not part of the original staged comparisons.
+    "views_front_left": {
+        "frame_count": 128,
+        "views": ["front", "left"], "tokens": 2048, "resolution": 720,
+    },
+    "views_front_only": {
+        "frame_count": 128,
+        "views": ["front"], "tokens": 2048, "resolution": 720,
     },
 }
 

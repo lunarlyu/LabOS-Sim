@@ -2,7 +2,7 @@
 
 Development experiment for selecting VLM input and generation settings. This
 folder records the sample, active comparisons, and results. All generated
-artifacts are isolated under the top-level `eval_design_choices/` directory.
+artifacts are isolated under `design_justification/eval_design_choices/`.
 
 ## Fixed settings
 
@@ -50,38 +50,38 @@ are uniformly sampled to 256 frames.
 Preview all active conditions without API calls:
 
 ```bash
-.venv/bin/python design_choices_experiment/run_experiment.py --dry-run
+.venv/bin/python design_justification/design_choices_experiment/run_experiment.py --dry-run
 ```
 
 Run the full experiment:
 
 ```bash
-.venv/bin/python design_choices_experiment/run_experiment.py --concurrency 1
+.venv/bin/python design_justification/design_choices_experiment/run_experiment.py --concurrency 1
 ```
 
 Run one condition with a stable prefix:
 
 ```bash
-.venv/bin/python design_choices_experiment/run_experiment.py \
+.venv/bin/python design_justification/design_choices_experiment/run_experiment.py \
   --condition frames_256 --run-prefix vlm_design_01
 ```
 
 Run only the adaptive 256-frame-cap condition:
 
 ```bash
-.venv/bin/python design_choices_experiment/run_experiment.py \
+.venv/bin/python design_justification/design_choices_experiment/run_experiment.py \
   --condition frames_adaptive_256 --run-prefix gemini31pro_adaptive256_design_01
 ```
 
 Each condition runs all three prompts and changes one baseline
 factor. P3 goes through P5 before subtype scoring. Outputs are:
 
-- Raw provider results: `eval_design_choices/raw/{run_id}/.../predictions.jsonl`
-- Per-call usage/retry metrics: `eval_design_choices/raw/{run_id}/.../metrics.jsonl`
-- Processed detection tables: `eval_design_choices/processed/{run_id}/`
-- Accuracy/F1 reports by prompt: `eval_design_choices/results/{run_id}/`
+- Raw provider results: `design_justification/eval_design_choices/raw/{run_id}/.../predictions.jsonl`
+- Per-call usage/retry metrics: `design_justification/eval_design_choices/raw/{run_id}/.../metrics.jsonl`
+- Processed detection tables: `design_justification/eval_design_choices/processed/{run_id}/`
+- Accuracy/F1 reports by prompt: `design_justification/eval_design_choices/results/{run_id}/`
 - Cost report for only the run IDs selected by the command:
-  `eval_design_choices/results/<run-prefix>_costs/`
+  `design_justification/eval_design_choices/results/<run-prefix>_costs/`
 
 `metrics.jsonl` contains call-level runtime, retries, token usage, and cost.
 Reports are grouped by task: P1 reports binary and balanced accuracy; P2 and
@@ -91,6 +91,9 @@ three prompts are never averaged into one headline score.
 ## Reports
 
 - `design_choice_results_brief.md`: presentation-facing tables.
+- `prompt_experiments.md`: why/how the evaluation prompts were updated (the
+  2026-07-01 template-copying fix these runs use, and the 2026-07-08 prompt
+  ablation whose P4/P6 winners were adopted).
 
 Historical 80-sample contact-sheet artifacts are retained as the staged
 comparison preceding the active independent-frame experiment. The active runner

@@ -1,5 +1,5 @@
 experiment: vlm_design_choices
-sample_manifest: design_choices_experiment/selected_samples_10_per_type.csv
+sample_manifest: design_justification/design_choices_experiment/selected_samples_10_per_type.csv
 sampling_seed: 20260711
 samples_per_type: 10
 sample_count: 80
@@ -33,6 +33,18 @@ stages:
       fixed_256: {frames_per_view: 256, max_completion_tokens: 2048, max_width_px: 720}
       adaptive_256: {frame_cap_per_view: 256, max_completion_tokens: 2048, max_width_px: 720}
       resolution_480: {frames_per_view: 128, max_completion_tokens: 2048, max_width_px: 480}
+
+  view_ablation:
+    status: complete_2026_08_07
+    jpeg_quality: 10
+    rationale: input cost scales linearly with view count; a smaller view set
+      also eases per-request image caps for the multi-model roster
+      (docs/MODEL_ROSTER_AND_BUDGET.md). View selection was fixed in the stages
+      above and never tested under independent frames.
+    conditions:
+      views_front_left: {frames_per_view: 128, camera_views: [front, left], max_completion_tokens: 2048, max_width_px: 720}
+      views_front_only: {frames_per_view: 128, camera_views: [front], max_completion_tokens: 2048, max_width_px: 720}
+    baseline_run: gemini31pro_multiframe_design_02_baseline_f128_views3_tok2048_res720
 
 selected_design:
   input_type: image_frames

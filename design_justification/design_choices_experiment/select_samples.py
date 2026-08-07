@@ -9,7 +9,7 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 CLASS_ORDER = [
     "success", "cap_open", "tube_drop", "tube_empty", "vortex_off",
     "wrong_orientation", "wrong_rack", "rack_flipped",
@@ -31,7 +31,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=20260711)
     parser.add_argument(
         "--output", type=Path,
-        default=REPO_ROOT / "design_choices_experiment/selected_samples_10_per_type.csv",
+        default=REPO_ROOT / "design_justification/design_choices_experiment/selected_samples_10_per_type.csv",
     )
     args = parser.parse_args()
 

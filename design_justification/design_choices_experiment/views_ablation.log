@@ -1,0 +1,84 @@
+/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+vlm=gemini_3_1_pro parser=gpt_5_5_parser input_mode=image_frames tasks=vortex_closed_binary,vortex_multilabel_classification,vortex_open_detection_strict samples=80 (10/type)
+gemini31pro_views_01_views_front_left: {"frame_count": 128, "views": ["front", "left"], "tokens": 2048, "resolution": 720}
+gemini31pro_views_01_views_front_only: {"frame_count": 128, "views": ["front"], "tokens": 2048, "resolution": 720}
+[WARNING] call failed (attempt 1/6): Expecting value: line 241 column 1 (char 1320)
+[WARNING] call failed (attempt 1/6): Expecting value: line 225 column 1 (char 1232)
+[WARNING] call failed (attempt 2/6): Expecting value: line 175 column 1 (char 957)
+[WARNING] call failed (attempt 2/6): Expecting value: line 179 column 1 (char 979)
+[WARNING] call failed (attempt 1/6): Expecting value: line 171 column 1 (char 935)
+[WARNING] call failed (attempt 1/6): Expecting value: line 177 column 1 (char 968)
+[WARNING] call failed (attempt 1/6): Expecting value: line 159 column 1 (char 869)
+[WARNING] call failed (attempt 1/6): Expecting value: line 171 column 1 (char 935)
+[WARNING] call failed (attempt 1/6): Expecting value: line 177 column 1 (char 968)
+[WARNING] call failed (attempt 1/6): Expecting value: line 171 column 1 (char 935)
+[WARNING] call failed (attempt 1/6): Expecting value: line 177 column 1 (char 968)
+[WARNING] call failed (attempt 1/6): Expecting value: line 155 column 1 (char 847)
+[WARNING] call failed (attempt 1/6): Expecting value: line 167 column 1 (char 913)
+[WARNING] call failed (attempt 1/6): Expecting value: line 237 column 1 (char 1298)
+[WARNING] call failed (attempt 1/6): Expecting value: line 191 column 1 (char 1045)
+[WARNING] call failed (attempt 1/6): Expecting value: line 283 column 1 (char 1551)
+[done] gemini31pro_views_01_views_front_left / vortex_closed_binary / gemini_3_1_pro: 80/80 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_left/vortex_closed_binary/gemini_3_1_pro
+[WARNING] call failed (attempt 1/6): Expecting value: line 383 column 1 (char 2101)
+[WARNING] call failed (attempt 1/6): Expecting value: line 157 column 1 (char 858)
+[WARNING] call failed (attempt 1/6): Expecting value: line 189 column 1 (char 1034)
+[WARNING] call failed (attempt 1/6): Expecting value: line 163 column 1 (char 891)
+[WARNING] call failed (attempt 1/6): Expecting value: line 193 column 1 (char 1056)
+[WARNING] call failed (attempt 1/6): Expecting value: line 167 column 1 (char 913)
+[WARNING] call failed (attempt 2/6): Expecting value: line 213 column 1 (char 1166)
+[WARNING] call failed (attempt 1/6): Expecting value: line 181 column 1 (char 990)
+[WARNING] call failed (attempt 1/6): Expecting value: line 167 column 1 (char 913)
+[WARNING] call failed (attempt 1/6): Expecting value: line 205 column 1 (char 1122)
+[WARNING] call failed (attempt 1/6): Expecting value: line 181 column 1 (char 990)
+[WARNING] call failed (attempt 1/6): Expecting value: line 199 column 1 (char 1089)
+[WARNING] call failed (attempt 1/6): Expecting value: line 177 column 1 (char 968)
+[done] gemini31pro_views_01_views_front_left / vortex_multilabel_classification / gemini_3_1_pro: 80/80 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_left/vortex_multilabel_classification/gemini_3_1_pro
+[WARNING] call failed (attempt 1/6): Expecting value: line 183 column 1 (char 1001)
+[WARNING] call failed (attempt 1/6): Expecting value: line 167 column 1 (char 913)
+[WARNING] call failed (attempt 1/6): Expecting value: line 169 column 1 (char 924)
+[WARNING] call failed (attempt 1/6): Expecting value: line 181 column 1 (char 990)
+[WARNING] call failed (attempt 1/6): Expecting value: line 157 column 1 (char 858)
+[WARNING] call failed (attempt 1/6): Expecting value: line 163 column 1 (char 891)
+[WARNING] call failed (attempt 1/6): Expecting value: line 175 column 1 (char 957)
+[schema] failure_mode_classification
+[data] M=1 C=8 I=80 cells=1920
+[done] wrote tables to /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/processed/gemini31pro_views_01_views_front_left
+                               task          model            metric_target  n_samples  accuracy  balanced_accuracy  success_recall  failure_recall  precision  recall    f1   fpr
+               vortex_closed_binary gemini_3_1_pro       binary_correctness         80     0.300              0.514             0.8           0.229      0.129   0.800 0.222 0.771
+   vortex_multilabel_classification gemini_3_1_pro eight_class_primary_type         80     0.238                NaN             NaN             NaN      0.220   0.238 0.188 0.105
+vortex_open_detection_strict_parser gemini_3_1_pro eight_class_primary_type         80     0.212                NaN             NaN             NaN      0.245   0.213 0.112 0.107
+[done] wrote direct statistics to /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/results/gemini31pro_views_01_views_front_left
+[done] gemini31pro_views_01_views_front_left / vortex_open_detection_strict / gemini_3_1_pro: 80/80 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_left/vortex_open_detection_strict/gemini_3_1_pro
+[done] gemini31pro_views_01_views_front_left / vortex_open_detection_strict_parser: parsed 80/80 rows from /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_left/vortex_open_detection_strict/gemini_3_1_pro with gpt_5_5_parser -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_left/vortex_open_detection_strict_parser/gemini_3_1_pro/gpt_5_5_parser
+[WARNING] call failed (attempt 1/6): Expecting value: line 235 column 1 (char 1287)
+[done] gemini31pro_views_01_views_front_only / vortex_closed_binary / gemini_3_1_pro: 80/80 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_only/vortex_closed_binary/gemini_3_1_pro
+[WARNING] call failed (attempt 1/6): Expecting value: line 167 column 1 (char 913)
+[WARNING] call failed (attempt 2/6): Expecting value: line 181 column 1 (char 990)
+[WARNING] call failed (attempt 1/6): Expecting value: line 239 column 1 (char 1309)
+[WARNING] call failed (attempt 1/6): Expecting value: line 165 column 1 (char 902)
+[done] gemini31pro_views_01_views_front_only / vortex_multilabel_classification / gemini_3_1_pro: 80/80 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_only/vortex_multilabel_classification/gemini_3_1_pro
+[WARNING] call failed (attempt 1/6): Expecting value: line 187 column 1 (char 1023)
+[WARNING] call failed (attempt 1/6): 'choices'
+[schema] failure_mode_classification
+[data] M=1 C=8 I=80 cells=1920
+[done] wrote tables to /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/processed/gemini31pro_views_01_views_front_only
+                               task          model            metric_target  n_samples  accuracy  balanced_accuracy  success_recall  failure_recall  precision  recall    f1   fpr
+               vortex_closed_binary gemini_3_1_pro       binary_correctness         80     0.312              0.521             0.8           0.243      0.131   0.800 0.225 0.757
+   vortex_multilabel_classification gemini_3_1_pro eight_class_primary_type         80     0.225                NaN             NaN             NaN      0.313   0.225 0.213 0.102
+vortex_open_detection_strict_parser gemini_3_1_pro eight_class_primary_type         80     0.200                NaN             NaN             NaN      0.384   0.200 0.187 0.100
+[done] wrote direct statistics to /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/results/gemini31pro_views_01_views_front_only
+                               run_id                                task          model  calls  total_cost_usd  input_tokens  output_tokens
+gemini31pro_views_01_views_front_left                vortex_closed_binary gemini_3_1_pro     80       95.466253      23804988          69262
+gemini31pro_views_01_views_front_left    vortex_multilabel_classification gemini_3_1_pro     80       95.432854      24422168          96992
+gemini31pro_views_01_views_front_left        vortex_open_detection_strict gemini_3_1_pro     80       90.096190      22411344          80624
+gemini31pro_views_01_views_front_only    vortex_multilabel_classification gemini_3_1_pro     80       24.165914      11836344          82768
+gemini31pro_views_01_views_front_only                vortex_closed_binary gemini_3_1_pro     80       23.514672      11363838          65583
+gemini31pro_views_01_views_front_only        vortex_open_detection_strict gemini_3_1_pro     80       23.291232      11228934          69447
+gemini31pro_views_01_views_front_only vortex_open_detection_strict_parser gpt_5_5_parser     80        0.780875        113839           7056
+gemini31pro_views_01_views_front_left vortex_open_detection_strict_parser gpt_5_5_parser     80        0.747210        113778           5944
+[cost] grand total: $353.4952 across 640 calls
+[done] gemini31pro_views_01_views_front_only / vortex_open_detection_strict / gemini_3_1_pro: 80/80 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_only/vortex_open_detection_strict/gemini_3_1_pro
+[done] gemini31pro_views_01_views_front_only / vortex_open_detection_strict_parser: parsed 80/80 rows from /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_only/vortex_open_detection_strict/gemini_3_1_pro with gpt_5_5_parser -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw/gemini31pro_views_01_views_front_only/vortex_open_detection_strict_parser/gemini_3_1_pro/gpt_5_5_parser
+raw: /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/raw
+metrics: /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/eval_design_choices/results

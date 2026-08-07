@@ -1,0 +1,9 @@
+model,subtype,n_present,n_absent,hits,false_alarms,recall,fpr
+gemini_3_1_pro,cap_open,30,210,0,1,0.0,0.004761904761904762
+gemini_3_1_pro,tube_drop,30,210,0,2,0.0,0.009523809523809525
+gemini_3_1_pro,tube_empty,30,210,18,37,0.6,0.1761904761904762
+gemini_3_1_pro,vortex_off,30,210,3,6,0.1,0.02857142857142857
+gemini_3_1_pro,wrong_orientation,30,210,0,1,0.0,0.004761904761904762
+gemini_3_1_pro,wrong_rack,30,210,4,2,0.13333333333333333,0.009523809523809525
+gemini_3_1_pro,rack_flipped,30,210,1,6,0.03333333333333333,0.02857142857142857
+gemini_3_1_pro,other_failure,0,240,0,5,,0.020833333333333332

@@ -9,8 +9,10 @@ data/**
 runs/raw/
 runs/.media_cache/
 
-# Design-choice predictions and derived results are versioned; media is not.
-eval_design_choices/.media_cache/
+# Design-justification predictions and derived results are versioned; media is not.
+design_justification/eval_design_choices/.media_cache/
+design_justification/prompt_design_choice/pilot_n10_contact_sheets/runs/.media_cache/
+design_justification/prompt_design_choice/screen_n80_independent_frames/runs/.media_cache/
 
 # Local paper draft; publish separately when submission text is ready.
 paper/icml_appendix_design_choices.md
