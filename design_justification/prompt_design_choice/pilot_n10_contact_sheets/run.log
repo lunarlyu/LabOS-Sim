@@ -1,0 +1,162 @@
+[VLM] p1__B :: qwen3_vl
+/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[done] p1__B / vortex_closed_binary / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p1_b/vortex_closed_binary/qwen3_vl
+[VLM] p1__B :: claude_opus_4_8
+[done] p1__B / vortex_closed_binary / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p1_b/vortex_closed_binary/claude_opus_4_8
+[VLM] p1__B :: gemini_3_1_pro
+[done] p1__B / vortex_closed_binary / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p1_b/vortex_closed_binary/gemini_3_1_pro
+[VLM] p1__V1 :: qwen3_vl
+[done] p1__V1 / vortex_closed_binary / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p1_v1/vortex_closed_binary/qwen3_vl
+[VLM] p1__V1 :: claude_opus_4_8
+[done] p1__V1 / vortex_closed_binary / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p1_v1/vortex_closed_binary/claude_opus_4_8
+[VLM] p1__V1 :: gemini_3_1_pro
+[done] p1__V1 / vortex_closed_binary / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p1_v1/vortex_closed_binary/gemini_3_1_pro
+[VLM] p1__V2 :: qwen3_vl
+[WARNING] call failed (attempt 1/6): ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+[WARNING] call failed (attempt 1/6): ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+[WARNING] call failed (attempt 1/6): ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out. (read timeout=180)
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out. (read timeout=180)
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out. (read timeout=180)
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out. (read timeout=180)
+[done] p1__V2 / vortex_closed_binary / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p1_v2/vortex_closed_binary/qwen3_vl
+[VLM] p1__V2 :: claude_opus_4_8
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out. (read timeout=180)
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out. (read timeout=180)
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out. (read timeout=180)
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out.
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out.
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out.
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out.
+[WARNING] call failed (attempt 1/6): HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out.
+[done] p1__V2 / vortex_closed_binary / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p1_v2/vortex_closed_binary/claude_opus_4_8
+[VLM] p1__V2 :: gemini_3_1_pro
+[done] p1__V2 / vortex_closed_binary / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p1_v2/vortex_closed_binary/gemini_3_1_pro
+[VLM] p2__B :: qwen3_vl
+[done] p2__B / vortex_multilabel_classification / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p2_b/vortex_multilabel_classification/qwen3_vl
+[VLM] p2__B :: claude_opus_4_8
+[done] p2__B / vortex_multilabel_classification / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p2_b/vortex_multilabel_classification/claude_opus_4_8
+[VLM] p2__B :: gemini_3_1_pro
+[done] p2__B / vortex_multilabel_classification / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p2_b/vortex_multilabel_classification/gemini_3_1_pro
+[VLM] p2__V1 :: qwen3_vl
+[done] p2__V1 / vortex_multilabel_classification / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p2_v1/vortex_multilabel_classification/qwen3_vl
+[VLM] p2__V1 :: claude_opus_4_8
+[done] p2__V1 / vortex_multilabel_classification / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p2_v1/vortex_multilabel_classification/claude_opus_4_8
+[VLM] p2__V1 :: gemini_3_1_pro
+[done] p2__V1 / vortex_multilabel_classification / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p2_v1/vortex_multilabel_classification/gemini_3_1_pro
+[VLM] p2__V2 :: qwen3_vl
+[done] p2__V2 / vortex_multilabel_classification / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p2_v2/vortex_multilabel_classification/qwen3_vl
+[VLM] p2__V2 :: claude_opus_4_8
+[done] p2__V2 / vortex_multilabel_classification / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p2_v2/vortex_multilabel_classification/claude_opus_4_8
+[VLM] p2__V2 :: gemini_3_1_pro
+[done] p2__V2 / vortex_multilabel_classification / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p2_v2/vortex_multilabel_classification/gemini_3_1_pro
+[VLM] p3__B :: qwen3_vl
+[done] p3__B / vortex_open_detection_strict / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/qwen3_vl
+[VLM] p3__B :: claude_opus_4_8
+[done] p3__B / vortex_open_detection_strict / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/claude_opus_4_8
+[VLM] p3__B :: gemini_3_1_pro
+[done] p3__B / vortex_open_detection_strict / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/gemini_3_1_pro
+[VLM] p3__V1 :: qwen3_vl
+[done] p3__V1 / vortex_open_detection_strict / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v1/vortex_open_detection_strict/qwen3_vl
+[VLM] p3__V1 :: claude_opus_4_8
+[done] p3__V1 / vortex_open_detection_strict / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v1/vortex_open_detection_strict/claude_opus_4_8
+[VLM] p3__V1 :: gemini_3_1_pro
+[done] p3__V1 / vortex_open_detection_strict / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v1/vortex_open_detection_strict/gemini_3_1_pro
+[VLM] p3__V2 :: qwen3_vl
+[done] p3__V2 / vortex_open_detection_strict / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v2/vortex_open_detection_strict/qwen3_vl
+[VLM] p3__V2 :: claude_opus_4_8
+[done] p3__V2 / vortex_open_detection_strict / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v2/vortex_open_detection_strict/claude_opus_4_8
+[VLM] p3__V2 :: gemini_3_1_pro
+[done] p3__V2 / vortex_open_detection_strict / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v2/vortex_open_detection_strict/gemini_3_1_pro
+[VLM] p4__B :: qwen3_vl
+[done] p4__B / vortex_open_detection_free / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/qwen3_vl
+[VLM] p4__B :: claude_opus_4_8
+[done] p4__B / vortex_open_detection_free / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/claude_opus_4_8
+[VLM] p4__B :: gemini_3_1_pro
+[done] p4__B / vortex_open_detection_free / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/gemini_3_1_pro
+[VLM] p4__V1 :: qwen3_vl
+[done] p4__V1 / vortex_open_detection_free / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v1/vortex_open_detection_free/qwen3_vl
+[VLM] p4__V1 :: claude_opus_4_8
+[done] p4__V1 / vortex_open_detection_free / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v1/vortex_open_detection_free/claude_opus_4_8
+[VLM] p4__V1 :: gemini_3_1_pro
+[done] p4__V1 / vortex_open_detection_free / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v1/vortex_open_detection_free/gemini_3_1_pro
+[VLM] p4__V2 :: qwen3_vl
+[done] p4__V2 / vortex_open_detection_free / qwen3_vl: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v2/vortex_open_detection_free/qwen3_vl
+[VLM] p4__V2 :: claude_opus_4_8
+[done] p4__V2 / vortex_open_detection_free / claude_opus_4_8: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v2/vortex_open_detection_free/claude_opus_4_8
+[VLM] p4__V2 :: gemini_3_1_pro
+[done] p4__V2 / vortex_open_detection_free / gemini_3_1_pro: 10 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v2/vortex_open_detection_free/gemini_3_1_pro
+[P3->p5B] p3__B :: qwen3_vl
+[done] p3__B / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict_parser/qwen3_vl/gpt_5_5_parser
+[P3->p5B] p3__B :: claude_opus_4_8
+[done] p3__B / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict_parser/claude_opus_4_8/gpt_5_5_parser
+[P3->p5B] p3__B :: gemini_3_1_pro
+[done] p3__B / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict_parser/gemini_3_1_pro/gpt_5_5_parser
+[P3->p5B] p3__V1 :: qwen3_vl
+[done] p3__V1 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v1/vortex_open_detection_strict/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v1/vortex_open_detection_strict_parser/qwen3_vl/gpt_5_5_parser
+[P3->p5B] p3__V1 :: claude_opus_4_8
+[done] p3__V1 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v1/vortex_open_detection_strict/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v1/vortex_open_detection_strict_parser/claude_opus_4_8/gpt_5_5_parser
+[P3->p5B] p3__V1 :: gemini_3_1_pro
+[done] p3__V1 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v1/vortex_open_detection_strict/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v1/vortex_open_detection_strict_parser/gemini_3_1_pro/gpt_5_5_parser
+[P3->p5B] p3__V2 :: qwen3_vl
+[done] p3__V2 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v2/vortex_open_detection_strict/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v2/vortex_open_detection_strict_parser/qwen3_vl/gpt_5_5_parser
+[P3->p5B] p3__V2 :: claude_opus_4_8
+[done] p3__V2 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v2/vortex_open_detection_strict/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v2/vortex_open_detection_strict_parser/claude_opus_4_8/gpt_5_5_parser
+[P3->p5B] p3__V2 :: gemini_3_1_pro
+[done] p3__V2 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v2/vortex_open_detection_strict/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_v2/vortex_open_detection_strict_parser/gemini_3_1_pro/gpt_5_5_parser
+[P4->p6B] p4__B :: qwen3_vl
+[done] p4__B / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free_parser/qwen3_vl/gpt_5_5_parser
+[P4->p6B] p4__B :: claude_opus_4_8
+[done] p4__B / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free_parser/claude_opus_4_8/gpt_5_5_parser
+[P4->p6B] p4__B :: gemini_3_1_pro
+[done] p4__B / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free_parser/gemini_3_1_pro/gpt_5_5_parser
+[P4->p6B] p4__V1 :: qwen3_vl
+[done] p4__V1 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v1/vortex_open_detection_free/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v1/vortex_open_detection_free_parser/qwen3_vl/gpt_5_5_parser
+[P4->p6B] p4__V1 :: claude_opus_4_8
+[done] p4__V1 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v1/vortex_open_detection_free/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v1/vortex_open_detection_free_parser/claude_opus_4_8/gpt_5_5_parser
+[P4->p6B] p4__V1 :: gemini_3_1_pro
+[done] p4__V1 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v1/vortex_open_detection_free/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v1/vortex_open_detection_free_parser/gemini_3_1_pro/gpt_5_5_parser
+[P4->p6B] p4__V2 :: qwen3_vl
+[done] p4__V2 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v2/vortex_open_detection_free/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v2/vortex_open_detection_free_parser/qwen3_vl/gpt_5_5_parser
+[P4->p6B] p4__V2 :: claude_opus_4_8
+[done] p4__V2 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v2/vortex_open_detection_free/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v2/vortex_open_detection_free_parser/claude_opus_4_8/gpt_5_5_parser
+[P4->p6B] p4__V2 :: gemini_3_1_pro
+[done] p4__V2 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v2/vortex_open_detection_free/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_v2/vortex_open_detection_free_parser/gemini_3_1_pro/gpt_5_5_parser
+[P5abl] p5__B :: qwen3_vl
+[done] p5__B / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p5_b/vortex_open_detection_strict_parser/qwen3_vl/gpt_5_5_parser
+[P5abl] p5__B :: claude_opus_4_8
+[done] p5__B / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p5_b/vortex_open_detection_strict_parser/claude_opus_4_8/gpt_5_5_parser
+[P5abl] p5__B :: gemini_3_1_pro
+[done] p5__B / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p5_b/vortex_open_detection_strict_parser/gemini_3_1_pro/gpt_5_5_parser
+[P5abl] p5__V1 :: qwen3_vl
+[done] p5__V1 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p5_v1/vortex_open_detection_strict_parser/qwen3_vl/gpt_5_5_parser
+[P5abl] p5__V1 :: claude_opus_4_8
+[done] p5__V1 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p5_v1/vortex_open_detection_strict_parser/claude_opus_4_8/gpt_5_5_parser
+[P5abl] p5__V1 :: gemini_3_1_pro
+[done] p5__V1 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p5_v1/vortex_open_detection_strict_parser/gemini_3_1_pro/gpt_5_5_parser
+[P5abl] p5__V2 :: qwen3_vl
+[done] p5__V2 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p5_v2/vortex_open_detection_strict_parser/qwen3_vl/gpt_5_5_parser
+[P5abl] p5__V2 :: claude_opus_4_8
+[done] p5__V2 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p5_v2/vortex_open_detection_strict_parser/claude_opus_4_8/gpt_5_5_parser
+[P5abl] p5__V2 :: gemini_3_1_pro
+[done] p5__V2 / vortex_open_detection_strict_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p3_b/vortex_open_detection_strict/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p5_v2/vortex_open_detection_strict_parser/gemini_3_1_pro/gpt_5_5_parser
+[P6abl] p6__B :: qwen3_vl
+[done] p6__B / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p6_b/vortex_open_detection_free_parser/qwen3_vl/gpt_5_5_parser
+[P6abl] p6__B :: claude_opus_4_8
+[done] p6__B / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p6_b/vortex_open_detection_free_parser/claude_opus_4_8/gpt_5_5_parser
+[P6abl] p6__B :: gemini_3_1_pro
+[done] p6__B / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p6_b/vortex_open_detection_free_parser/gemini_3_1_pro/gpt_5_5_parser
+[P6abl] p6__V1 :: qwen3_vl
+[done] p6__V1 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p6_v1/vortex_open_detection_free_parser/qwen3_vl/gpt_5_5_parser
+[P6abl] p6__V1 :: claude_opus_4_8
+[done] p6__V1 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p6_v1/vortex_open_detection_free_parser/claude_opus_4_8/gpt_5_5_parser
+[P6abl] p6__V1 :: gemini_3_1_pro
+[done] p6__V1 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p6_v1/vortex_open_detection_free_parser/gemini_3_1_pro/gpt_5_5_parser
+[P6abl] p6__V2 :: qwen3_vl
+[done] p6__V2 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/qwen3_vl with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p6_v2/vortex_open_detection_free_parser/qwen3_vl/gpt_5_5_parser
+[P6abl] p6__V2 :: claude_opus_4_8
+[done] p6__V2 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/claude_opus_4_8 with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p6_v2/vortex_open_detection_free_parser/claude_opus_4_8/gpt_5_5_parser
+[P6abl] p6__V2 :: gemini_3_1_pro
+[done] p6__V2 / vortex_open_detection_free_parser: parsed /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p4_b/vortex_open_detection_free/gemini_3_1_pro with gpt_5_5_parser (10 rows) -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/experiments/prompt_ablation/runs/raw/p6_v2/vortex_open_detection_free_parser/gemini_3_1_pro/gpt_5_5_parser
+=== ABLATION COLLECTION DONE ===

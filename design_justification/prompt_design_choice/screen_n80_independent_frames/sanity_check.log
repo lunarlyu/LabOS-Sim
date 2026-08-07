@@ -1,0 +1,74 @@
+/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+Traceback (most recent call last):
+  File "/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/scripts/data_processing/build_detection_table.py", line 461, in <module>
+    sys.exit(main())
+  File "/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/scripts/data_processing/build_detection_table.py", line 422, in main
+    pm = per_model_summary(long)
+  File "/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/scripts/data_processing/build_detection_table.py", line 343, in per_model_summary
+    g = long.groupby("model", sort=False)
+  File "/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/.venv/lib/python3.9/site-packages/pandas/core/frame.py", line 9210, in groupby
+    return DataFrameGroupBy(
+  File "/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/.venv/lib/python3.9/site-packages/pandas/core/groupby/groupby.py", line 1331, in __init__
+    grouper, exclusions, obj = get_grouper(
+  File "/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/.venv/lib/python3.9/site-packages/pandas/core/groupby/grouper.py", line 1043, in get_grouper
+    raise KeyError(gpr)
+KeyError: 'model'
+vlm=gemini_3_flash provider=arena parser=gpt_5_5_parser condition={"frame_count": 128, "views": ["front", "left", "right"], "tokens": 2048, "resolution": 720} samples=3
+estimated VLM cost: 5 arm(s) x ~$35 = ~$175 (80-clip basis; scale down for --limit)
+promptabl2_gemini_3_flash_p1_b: vortex_closed_binary cand=B [VLM] prompt=prompts/ (committed baseline)
+promptabl2_gemini_3_flash_p2_b: vortex_multilabel_classification cand=B [VLM] prompt=prompts/ (committed baseline)
+promptabl2_gemini_3_flash_p1_v1: vortex_closed_binary cand=V1 [VLM] prompt=design_justification/prompt_ablation/variants/closed_binary/V1/p1_closed_binary.md
+promptabl2_gemini_3_flash_p2_v1: vortex_multilabel_classification cand=V1 [VLM] prompt=design_justification/prompt_ablation/variants/multilabel_classification/V1/p2_multilabel_classification.md
+promptabl2_gemini_3_flash_p2_v2: vortex_multilabel_classification cand=V2 [VLM] prompt=design_justification/prompt_ablation/variants/multilabel_classification/V2/p2_multilabel_classification.md
+promptabl2_gemini_3_flash_p5_v2: vortex_open_detection_strict_parser cand=V2 [parser-only] prompt=design_justification/prompt_ablation/variants/open_detection_strict_parser/V2/p5_open_detection_strict_parser.md
+--limit set: skipping parser arm(s) ['p5_v2'] (run them in the full run)
+[done] promptabl2_gemini_3_flash_p1_b / vortex_closed_binary / gemini_3_flash: 3/3 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p1_b/vortex_closed_binary/gemini_3_flash
+Traceback (most recent call last):
+  File "/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/run_experiment.py", line 364, in <module>
+    main()
+  File "/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/run_experiment.py", line 346, in main
+    process_metrics(run_id)
+  File "/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/run_experiment.py", line 239, in process_metrics
+    subprocess.run([
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/.venv/bin/python', 'scripts/data_processing/build_detection_table.py', '--runs-root', '/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs', '--run-ids', 'promptabl2_gemini_3_flash_p1_b', '--outdir', '/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/processed/promptabl2_gemini_3_flash_p1_b']' returned non-zero exit status 1.
+/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+vlm=gemini_3_flash provider=arena parser=gpt_5_5_parser condition={"frame_count": 128, "views": ["front", "left", "right"], "tokens": 2048, "resolution": 720} samples=3
+estimated VLM cost: 5 arm(s) x ~$35 = ~$175 (80-clip basis; scale down for --limit)
+promptabl2_gemini_3_flash_p1_b: vortex_closed_binary cand=B [VLM] prompt=prompts/ (committed baseline)
+promptabl2_gemini_3_flash_p2_b: vortex_multilabel_classification cand=B [VLM] prompt=prompts/ (committed baseline)
+promptabl2_gemini_3_flash_p1_v1: vortex_closed_binary cand=V1 [VLM] prompt=design_justification/prompt_ablation/variants/closed_binary/V1/p1_closed_binary.md
+promptabl2_gemini_3_flash_p2_v1: vortex_multilabel_classification cand=V1 [VLM] prompt=design_justification/prompt_ablation/variants/multilabel_classification/V1/p2_multilabel_classification.md
+promptabl2_gemini_3_flash_p2_v2: vortex_multilabel_classification cand=V2 [VLM] prompt=design_justification/prompt_ablation/variants/multilabel_classification/V2/p2_multilabel_classification.md
+promptabl2_gemini_3_flash_p5_v2: vortex_open_detection_strict_parser cand=V2 [parser-only] prompt=design_justification/prompt_ablation/variants/open_detection_strict_parser/V2/p5_open_detection_strict_parser.md
+--limit set: skipping parser arm(s) ['p5_v2'] (run them in the full run)
+[done] promptabl2_gemini_3_flash_p1_b / vortex_closed_binary / gemini_3_flash: 3/3 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p1_b/vortex_closed_binary/gemini_3_flash
+--limit set: skipping processed metrics for promptabl2_gemini_3_flash_p1_b; inspect /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p1_b/vortex_closed_binary/gemini_3_flash/predictions.jsonl
+[incomplete] promptabl2_gemini_3_flash_p2_b / vortex_multilabel_classification / gemini_3_flash: 2/3 clips succeeded; rerun the same command to retry failures -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p2_b/vortex_multilabel_classification/gemini_3_flash
+incomplete run: /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p2_b/vortex_multilabel_classification/gemini_3_flash has 2/3 successful samples. Rerun the same command to retry only failures.
+/Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+vlm=gemini_3_flash provider=arena parser=gpt_5_5_parser condition={"frame_count": 128, "views": ["front", "left", "right"], "tokens": 2048, "resolution": 720} samples=3
+estimated VLM cost: 5 arm(s) x ~$35 = ~$175 (80-clip basis; scale down for --limit)
+promptabl2_gemini_3_flash_p1_b: vortex_closed_binary cand=B [VLM] prompt=prompts/ (committed baseline)
+promptabl2_gemini_3_flash_p2_b: vortex_multilabel_classification cand=B [VLM] prompt=prompts/ (committed baseline)
+promptabl2_gemini_3_flash_p1_v1: vortex_closed_binary cand=V1 [VLM] prompt=design_justification/prompt_ablation/variants/closed_binary/V1/p1_closed_binary.md
+promptabl2_gemini_3_flash_p2_v1: vortex_multilabel_classification cand=V1 [VLM] prompt=design_justification/prompt_ablation/variants/multilabel_classification/V1/p2_multilabel_classification.md
+promptabl2_gemini_3_flash_p2_v2: vortex_multilabel_classification cand=V2 [VLM] prompt=design_justification/prompt_ablation/variants/multilabel_classification/V2/p2_multilabel_classification.md
+promptabl2_gemini_3_flash_p5_v2: vortex_open_detection_strict_parser cand=V2 [parser-only] prompt=design_justification/prompt_ablation/variants/open_detection_strict_parser/V2/p5_open_detection_strict_parser.md
+--limit set: skipping parser arm(s) ['p5_v2'] (run them in the full run)
+[done] promptabl2_gemini_3_flash_p1_b / vortex_closed_binary / gemini_3_flash: 3/3 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p1_b/vortex_closed_binary/gemini_3_flash
+--limit set: skipping processed metrics for promptabl2_gemini_3_flash_p1_b; inspect /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p1_b/vortex_closed_binary/gemini_3_flash/predictions.jsonl
+[done] promptabl2_gemini_3_flash_p2_b / vortex_multilabel_classification / gemini_3_flash: 3/3 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p2_b/vortex_multilabel_classification/gemini_3_flash
+--limit set: skipping processed metrics for promptabl2_gemini_3_flash_p2_b; inspect /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p2_b/vortex_multilabel_classification/gemini_3_flash/predictions.jsonl
+[done] promptabl2_gemini_3_flash_p1_v1 / vortex_closed_binary / gemini_3_flash: 3/3 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p1_v1/vortex_closed_binary/gemini_3_flash
+--limit set: skipping processed metrics for promptabl2_gemini_3_flash_p1_v1; inspect /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p1_v1/vortex_closed_binary/gemini_3_flash/predictions.jsonl
+[done] promptabl2_gemini_3_flash_p2_v1 / vortex_multilabel_classification / gemini_3_flash: 3/3 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p2_v1/vortex_multilabel_classification/gemini_3_flash
+--limit set: skipping processed metrics for promptabl2_gemini_3_flash_p2_v1; inspect /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p2_v1/vortex_multilabel_classification/gemini_3_flash/predictions.jsonl
+[WARNING] call failed (attempt 1/6): ('Connection aborted.', TimeoutError(60, 'Operation timed out'))
+[done] promptabl2_gemini_3_flash_p2_v2 / vortex_multilabel_classification / gemini_3_flash: 3/3 clips -> /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p2_v2/vortex_multilabel_classification/gemini_3_flash
+--limit set: skipping processed metrics for promptabl2_gemini_3_flash_p2_v2; inspect /Users/carrietan/Desktop/LabOS-Sim/benchmark_code/LabOS-Sim/design_justification/prompt_ablation_v2/runs/raw/promptabl2_gemini_3_flash_p2_v2/vortex_multilabel_classification/gemini_3_flash/predictions.jsonl
+validation complete; raw predictions per arm are under runs/raw/

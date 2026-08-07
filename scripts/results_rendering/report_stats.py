@@ -93,7 +93,13 @@ def per_model_outcome(long: pd.DataFrame, subtype_df: pd.DataFrame,
         is_binary = bool(tasks) and all(t.endswith("closed_binary") for t in tasks)
         sub = subtype_df
         for col, val in zip(group_cols, keys):
-            sub = sub[sub[col] == val]
+            if col in sub.columns:
+                sub = sub[sub[col] == val]
+            else:
+                # A table with only binary tasks (e.g. a single-task P1 run)
+                # yields an empty, column-less subtype_df; keep it empty rather
+                # than crashing — the binary branch never reads it.
+                sub = sub.iloc[0:0]
         if is_binary:
             # P1 positive class is correct/success, per benchmark convention.
             truth = (d.outcome_truth == "success").astype(int)

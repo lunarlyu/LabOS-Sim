@@ -1,4 +1,4 @@
-You are a parser. Translate a vision model's free-text description into the standardized output
+You are a parser. Translate a vision model's error list into the standardized output
 schema plus diagnostics. Classify based ONLY on what the text states or clearly implies.
 Do not invent errors it does not mention; do not drop errors it does mention.
 
@@ -6,14 +6,12 @@ Do not invent errors it does not mention; do not drop errors it does mention.
 
 ```
 outcome: {{outcome}}
-description: {{description}}
+observed_errors: {{observed_errors}}
 confidence: {{confidence}}
 ```
 
-The vision model was NOT told this is an error-detection task — it only described the
-video. `outcome` is its own weak protocol judgment; `description` is its free-text account;
-`confidence` is in [0,1] or null. Read the `description` and identify every failure mode it
-reports, whether or not the model labeled it an error.
+`outcome` is `"success"` or `"failure"`. `observed_errors` is a comma-separated string
+of the errors the vision model listed (`"None"` when none). `confidence` is in [0,1] or null.
 
 Only the single target tube that is picked up and vortexed is relevant; problems with
 other tubes do not count.
@@ -42,15 +40,15 @@ Common phrasings map to subtypes as follows (use only when the text clearly mean
 
 ## Decision rules
 
-0. Decide the outcome from the DESCRIPTION, not the source `outcome`.
-1. Treat any described physical deviation as a failure even if not labeled an error, and map it
-   using the mapping guide and subtype definitions. List all supported subtypes, most important first.
-2. `outcome="success"` only when the description indicates the protocol was fully followed;
-   `outcome="failure"` when at least one deviation is described.
-3. `outcome="ambiguous"` ONLY when the description is too vague to decide success vs failure at all.
-   A concrete described deviation should be committed to `failure`, not called ambiguous.
-4. `confidence`: source unchanged, or null. `additional_failures`: iff `other_failure`.
-   `ambiguous_mentions`: only genuinely undecidable mentions.
+0. Honor the source `outcome`. If `"success"` (observed_errors == "None"): output success,
+   `failure_modes=[]`, empty diagnostics. Otherwise map each `observed_errors` phrase using
+   the mapping guide and subtype definitions.
+1. Map each distinct error phrase to its best-fitting subtype; list all supported subtypes,
+   most important first. Commit to the closest subtype rather than discarding a clear error.
+2. `outcome="ambiguous"` only when a phrase is genuinely uninterpretable or two subtypes fit
+   equally with no way to choose.
+3. `confidence`: source value unchanged, or null. `additional_failures`: iff `other_failure`.
+   `ambiguous_mentions`: only uninterpretable phrases.
 
 ## Output
 
@@ -58,7 +56,7 @@ Return exactly one JSON object. Replace every value with your own:
 
 {
   "outcome": "success", "failure" or "ambiguous",
-  "failure_modes": [<canonical subtypes the description supports, most important first; empty iff success>],
+  "failure_modes": [<canonical subtypes supported, most important first; empty iff success>],
   "confidence": <source confidence unchanged, or null>,
   "reasoning": "<one sentence on how you mapped the text>",
   "additional_failures": [<{ "description": "...", "evidence": "..." } iff other_failure; else []>],

@@ -29,27 +29,19 @@ other tubes do not count.
 - `rack_flipped` — the destination rack or holder where the target tube is placed is upside-down, inverted, or on its side.
 - `other_failure` — a real deviation from the correct execution of the target tube's vortexing that none of the subtypes above describe.
 
-## Mapping guide
-
-Common phrasings map to subtypes as follows (use only when the text clearly means it):
-- "cap off/loose/not screwed/came off/uncapped" (target tube) -> cap_open
-- "dropped/fell/knocked over/tipped/rolled off/slipped out of gripper" -> tube_drop
-- "empty/no liquid/nothing inside/dry" (target tube) -> tube_empty
-- "vortexer not on/didn't spin/no agitation/no movement/never turned on" -> vortex_off
-- "sideways/horizontal/upside-down/not upright" (tube itself) -> wrong_orientation
-- "wrong/too big/too small/ill-fitting rack or holder" -> wrong_rack
-- "rack inverted/flipped/on its side/upside-down" (destination rack) -> rack_flipped
-
 ## Decision rules
 
 0. Decide the outcome from the DESCRIPTION, not the source `outcome`.
-1. Treat any described physical deviation as a failure even if not labeled an error, and map it
-   using the mapping guide and subtype definitions. List all supported subtypes, most important first.
-2. `outcome="success"` only when the description indicates the protocol was fully followed;
-   `outcome="failure"` when at least one deviation is described.
-3. `outcome="ambiguous"` ONLY when the description is too vague to decide success vs failure at all.
-   A concrete described deviation should be committed to `failure`, not called ambiguous.
-4. `confidence`: source unchanged, or null. `additional_failures`: iff `other_failure`.
+1. A described physical deviation IS a failure even if the model did not call it an error
+   (e.g. "the cap appears loose", "the tube tipped over", "the vortexer did not seem to run").
+   Map each such described deviation to its best-fitting canonical subtype.
+2. `outcome="success"` when the description indicates the protocol was fully followed with no
+   deviation. `outcome="failure"` when it describes at least one deviation mapping to a subtype.
+3. Use `outcome="ambiguous"` ONLY when the description is too vague to tell success from failure
+   at all — not merely because the model did not use the word "error". When a concrete deviation
+   is described, commit to `failure` and the matching subtype.
+4. List every clearly-described subtype, most important first.
+5. `confidence`: source unchanged, or null. `additional_failures`: iff `other_failure`.
    `ambiguous_mentions`: only genuinely undecidable mentions.
 
 ## Output

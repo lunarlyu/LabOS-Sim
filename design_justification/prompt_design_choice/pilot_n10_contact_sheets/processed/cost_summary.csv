@@ -1,0 +1,15 @@
+task,model,calls,total_cost_usd,input_tokens,output_tokens
+vortex_open_detection_free_parser,gpt_5_5_parser,180,2.52381,252942,42162
+vortex_multilabel_classification,claude_opus_4_8,30,1.78035,335440,4126
+vortex_open_detection_free,claude_opus_4_8,30,1.76465,308780,8830
+vortex_closed_binary,claude_opus_4_8,30,1.648025,311410,3639
+vortex_open_detection_strict_parser,gpt_5_5_parser,180,1.620375,232203,23760
+vortex_open_detection_strict,claude_opus_4_8,30,1.603275,313380,1455
+vortex_closed_binary,gemini_3_1_pro,30,0.749042,108157,44394
+vortex_open_detection_free,gemini_3_1_pro,30,0.574832,90628,32798
+vortex_multilabel_classification,gemini_3_1_pro,30,0.548422,98993,29203
+vortex_open_detection_strict,gemini_3_1_pro,30,0.495528,80340,27904
+vortex_closed_binary,qwen3_vl,30,0.040095789,239615,2072
+vortex_multilabel_classification,qwen3_vl,30,0.035669351,224012,2370
+vortex_open_detection_strict,qwen3_vl,30,0.032651626,226306,964
+vortex_open_detection_free,qwen3_vl,30,0.02901324,208878,3370
