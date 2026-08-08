@@ -1,0 +1,17 @@
+task,model,type,n_truth,overall_exact_accuracy,precision,recall,f1,fpr
+vortex_multilabel_classification,gemini_3_1_pro,success,10,0.2375,0.13333333333333333,0.4,0.2,0.37142857142857144
+vortex_multilabel_classification,gemini_3_1_pro,cap_open,10,0.2375,1.0,0.2,0.33333333333333337,0.0
+vortex_multilabel_classification,gemini_3_1_pro,tube_drop,10,0.2375,0.2,0.1,0.13333333333333333,0.05714285714285714
+vortex_multilabel_classification,gemini_3_1_pro,tube_empty,10,0.2375,0.2727272727272727,0.6,0.37499999999999994,0.22857142857142856
+vortex_multilabel_classification,gemini_3_1_pro,vortex_off,10,0.2375,0.0,0.0,0.0,0.02857142857142857
+vortex_multilabel_classification,gemini_3_1_pro,wrong_orientation,10,0.2375,0.25,0.1,0.14285714285714288,0.04285714285714286
+vortex_multilabel_classification,gemini_3_1_pro,wrong_rack,10,0.2375,0.2,0.1,0.13333333333333333,0.05714285714285714
+vortex_multilabel_classification,gemini_3_1_pro,rack_flipped,10,0.2375,0.5714285714285714,0.4,0.47058823529411764,0.04285714285714286
+vortex_open_detection_strict_parser,gemini_3_1_pro,success,10,0.2,0.14634146341463414,0.6,0.23529411764705882,0.5
+vortex_open_detection_strict_parser,gemini_3_1_pro,cap_open,10,0.2,0.5,0.1,0.16666666666666669,0.014285714285714285
+vortex_open_detection_strict_parser,gemini_3_1_pro,tube_drop,10,0.2,1.0,0.1,0.18181818181818182,0.0
+vortex_open_detection_strict_parser,gemini_3_1_pro,tube_empty,10,0.2,0.2962962962962963,0.8,0.43243243243243246,0.2714285714285714
+vortex_open_detection_strict_parser,gemini_3_1_pro,vortex_off,10,0.2,,0.0,0.0,0.0
+vortex_open_detection_strict_parser,gemini_3_1_pro,wrong_orientation,10,0.2,0.0,0.0,0.0,0.07142857142857142
+vortex_open_detection_strict_parser,gemini_3_1_pro,wrong_rack,10,0.2,,0.0,0.0,0.0
+vortex_open_detection_strict_parser,gemini_3_1_pro,rack_flipped,10,0.2,,0.0,0.0,0.0

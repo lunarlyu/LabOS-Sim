@@ -35,7 +35,7 @@ stages:
       resolution_480: {frames_per_view: 128, max_completion_tokens: 2048, max_width_px: 480}
 
   frame_budget_bridge:
-    status: proposed
+    status: complete_2026_08_08
     rationale: field norms are ~1 fps (Video-MME, Gemini native) to 2-4 fps
       (OpenAI guidance); 128/view on 4-21s clips is 6-30 fps effective. If 32
       holds, roster cost /4 and Claude's per-request image cap fits 3 views.

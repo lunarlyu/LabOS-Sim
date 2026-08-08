@@ -145,6 +145,52 @@ keep **3 views for scored benchmark runs**; use fewer views only for
 development screens, and revisit if a repeat-run noise study tightens the
 floor.
 
+## 6. Frame-budget bridge: 128 vs 64 vs 32 frames/view (added 2026-08-08)
+
+Motivation: field norms are ~1 fps (Video-MME, Gemini native sampling) to
+2–4 fps (OpenAI guidance); 128/view on 4–21 s clips is 6–30 fps effective.
+OpenRouter also bills Gemini 3.1 Pro (and Grok, GPT-5.5) at DOUBLE the input
+rate above 200k prompt tokens — 128f calls (~420k) pay it, 32f calls (~105k)
+do not — so 32f is ~7x cheaper, not 4x. Same 80 clips, 3 views, committed
+prompts. Caveat: 64f/32f ran via the Arena route; the 128f baseline via
+OpenRouter (route changes alongside frames).
+
+| Frames/view | P1 acc / balanced | P2 exact | P3/P5 exact | Cost |
+|---|---:|---:|---:|---:|
+| 128 (baseline) | 0.275 / 0.500 | **0.300** | 0.188 | $409.44 |
+| 64 | 0.313 / 0.521 | 0.225 | 0.125 | $214.53 |
+| 32 | **0.363** / **0.550** | 0.237 | **0.200** | **$56.62** |
+
+Headline metrics show NO monotonic degradation — P1 improves as frames drop
+(consistent with the §4 dilution finding) and P3/P5 recovers fully at 32f.
+P2 sits at ~0.23 in both reduced conditions; note that EVERY perturbed
+condition ever run (views or frames) lands P2 in the 0.21–0.24 band against
+the baseline's single 0.300 measurement, so baseline luck cannot be excluded
+(P2 self-agreement on identical inputs is only 15/30, §"temperature 0").
+
+Per-subtype P2 recall (n=10 each; wide intervals):
+
+| Subtype | 128f | 64f | 32f |
+|---|---:|---:|---:|
+| wrong_rack | **0.6** | 0.1 | 0.1 |
+| tube_drop | 0.2 | 0.1 | 0.1 |
+| vortex_off | 0.0 | 0.1 | 0.0 |
+| tube_empty / rack_flipped / cap_open | stable within ±0.1 | | |
+
+`wrong_rack` is again the canary (as in the §5 view ablation): its recall
+collapses under EITHER budget cut, consistent with rack identity needing
+both a side view and the brief pick-up moment. However 0.6 vs 0.1 on n=10 is
+borderline (Fisher p≈0.06) and the route changed with the condition.
+
+**Implication.** No headline-level case against 32f; the open question is
+whether the 128f baseline's P2/wrong_rack advantage is real or a high-side
+draw. Cheapest decisive next step (~$137): re-run the 128f baseline once on
+the Arena route — it simultaneously tests the route confound, measures the
+repeat-run noise floor this brief has flagged since §"temperature 0", and
+settles wrong_rack. If it replicates 0.6, keep 128f for scored runs (or
+accept a documented wrong_rack penalty at 32f); if it lands ~0.2–0.4, adopt
+32f and bank the ~7x saving.
+
 ## Additional note: temperature 0 is not deterministic
 
 For the 30 long clips, fixed and adaptive 256 generated **23,040/23,040
