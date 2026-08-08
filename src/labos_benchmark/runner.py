@@ -244,6 +244,10 @@ def collect_suite(
     media_cfg = defaults.get("media", {})
     call_cfg = defaults.get("call", {})
     model_cfg = _model_cfg_with_call_defaults(config["models"][model_name], call_cfg)
+    if len(tasks) < 2 and model_cfg.get("anthropic_cache_control"):
+        # a cache-write surcharge with no follow-up reads is pure loss, so
+        # single-task runs (incl. the per-task scripts via collect()) go unflagged
+        model_cfg.pop("anthropic_cache_control")
     adapter = get_adapter(model_cfg["adapter"], model_cfg)
     cost_entry = config["model_costs"].get(model_cfg.get("provider_model_id"))
     cams = camera_views if camera_views is not None else media_cfg.get("camera_views", [])
@@ -298,28 +302,44 @@ def collect_suite(
                                    runs_root=runs_root, data_root=data_root)
         tasks_todo = [task for task in tasks if dp.sample_id not in completed[task]]
         cache_name = None
+        cache_usage = None  # cachedContents write bills at the full input rate
         if use_context_cache and media and len(tasks_todo) > 1:
             try:
-                cache_name = adapter.create_cache(media, ttl_s=cache_ttl_s)
+                cache_name, cache_usage = adapter.create_cache(media, ttl_s=cache_ttl_s)
             except Exception as exc:  # noqa: BLE001 — cache is an optimization, not a dependency
                 print(f"[WARNING] context cache creation failed for {dp.sample_id}: {exc}; "
                       "sending full media per call", flush=True)
+        created_cache = cache_name
         try:
             for task in tasks_todo:
                 result, ar = _call(task, dp, [] if cache_name else media, cache_name)
-                if not result.success and cache_name:
-                    # cache may have expired mid-clip (TTL) — one uncached retry round
+                if cache_name and not result.success and not any(result.raw_outputs_per_try):
+                    # No model text ever came back -> transport-level failure,
+                    # most likely an expired/invalid cache reference. Drop the
+                    # cache for the rest of this clip and retry uncached. (A
+                    # parse failure keeps the cache: text arrived, so the cache
+                    # reference is fine and re-sending media cannot help.)
                     print(f"[WARNING] cached call failed for {dp.sample_id}/{task}; "
-                          "retrying with full media", flush=True)
+                          "dropping the cache and retrying with full media", flush=True)
+                    cache_name = None
                     result, ar = _call(task, dp, media, None)
+                if cache_usage is not None:
+                    # ledger the cache write against the clip's first recorded
+                    # call so run cost totals reflect actual spend
+                    write_cost, _ = _client.compute_cost(cache_usage, cost_entry)
+                    result.input_tokens += int(cache_usage.get("prompt_tokens", 0) or 0)
+                    result.cost += write_cost
+                    if result.cost_source == "none" and write_cost:
+                        result.cost_source = "table"
+                    cache_usage = None
                 with write_lock:
                     _write_record(run_dirs[task], run_id, task, model_name, dp.sample_id,
                                   result, ar, expected=dp.expected)
                     if result.success and result.output is not None:
                         newly_succeeded[task].add(dp.sample_id)
         finally:
-            if cache_name:
-                adapter.delete_cache(cache_name)
+            if created_cache:
+                adapter.delete_cache(created_cache)
 
     _run_pool(_process, pending, concurrency)
     for task in tasks:

@@ -148,12 +148,16 @@ class VertexNativeAdapter(BaseVLMAdapter):
     # ------------------------------------------------------------------ #
     # Explicit context caching
     # ------------------------------------------------------------------ #
-    def create_cache(self, media: list[dict[str, Any]], *, ttl_s: int = 300) -> str:
-        """Store the media prefix as a cachedContents resource; returns its name.
+    def create_cache(self, media: list[dict[str, Any]],
+                     *, ttl_s: int = 300) -> tuple[str, dict[str, Any]]:
+        """Store the media prefix as a cachedContents resource.
 
-        Every subsequent generate(cached_content=name) bills these tokens at the
-        cached rate. TTL keeps storage cost negligible; the resource may also be
-        deleted eagerly with delete_cache().
+        Returns (resource_name, usage): every subsequent
+        generate(cached_content=name) bills these tokens at the cached rate,
+        but the write itself bills them once at the standard input rate —
+        `usage` carries that count so the caller can put it in the cost ledger
+        (storage is excluded: negligible at short TTLs). TTL bounds storage
+        cost; the resource may also be deleted eagerly with delete_cache().
         """
         payload = {
             "model": f"projects/{self.project}/locations/{self.location}/{self._model_path}",
@@ -161,7 +165,10 @@ class VertexNativeAdapter(BaseVLMAdapter):
             "ttl": f"{int(ttl_s)}s",
         }
         response = self._post(f"{self._base}/cachedContents", payload)
-        return response.json()["name"]
+        body = response.json()
+        total = int((body.get("usageMetadata") or {}).get("totalTokenCount", 0))
+        usage = {"prompt_tokens": total, "completion_tokens": 0, "total_tokens": total}
+        return body["name"], usage
 
     def delete_cache(self, cache_name: str) -> None:
         """Best-effort eager delete (TTL is the safety net)."""

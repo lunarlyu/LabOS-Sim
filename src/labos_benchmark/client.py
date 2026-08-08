@@ -232,8 +232,15 @@ def call_with_retries(
         except Exception as exc:  # noqa: BLE001
             print(f"[WARNING] call failed (attempt {attempt + 1}/{max_retries + 1}): {exc}", flush=True)
             result.register_error()
-            if _http_status(exc) == 413:
+            status = _http_status(exc)
+            if status == 413:
                 print("[WARNING] HTTP 413 is not retryable; reduce media payload size.", flush=True)
+                break
+            if cached_content and status in (400, 403, 404):
+                # the context cache is likely expired/invalid — retrying the same
+                # reference cannot succeed; let the caller fall back uncached
+                print(f"[WARNING] HTTP {status} while referencing a context cache; "
+                      "not retrying with the cache.", flush=True)
                 break
         if attempt < max_retries:
             _backoff_sleep(attempt)

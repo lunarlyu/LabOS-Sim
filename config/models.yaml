@@ -110,7 +110,8 @@ models:
     temperature: 0
     # Anthropic prompt caching via OpenRouter: cache the media prefix so the
     # clip-grouped suite (run_vlm_suite.py) re-reads it at ~0.1x. Writes cost
-    # 1.25x, so this only pays off with >=2 prompts per clip back-to-back.
+    # 1.25x, so the runner honors this flag only for multi-task suite runs —
+    # single-task runs (per-task scripts) automatically drop it.
     anthropic_cache_control: true
 
   qwen3_vl:
