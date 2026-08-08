@@ -1,1 +1,8 @@
-{}
+{
+  "gemini-3.1-pro-preview": {
+    "notes": "Vertex native route (no provider cost field). Long-context tier (>200k-token prompts, i.e. the full 128x3 design): ~2x base $2/12. Cached rate ~25% of input. List-price reads 2026-08-08, pending billing-dashboard confirmation; +/-30%.",
+    "input_cost_per_1M": 4.0,
+    "cached_input_cost_per_1M": 1.0,
+    "output_cost_per_1M": 12.0
+  }
+}

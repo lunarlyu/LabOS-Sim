@@ -38,16 +38,31 @@ def _tokens(usage: dict[str, Any]) -> tuple[int, int]:
     return int(in_tok), int(out_tok)
 
 
+def _cached_tokens(usage: dict[str, Any]) -> int:
+    details = usage.get("prompt_tokens_details") or {}
+    return int(details.get("cached_tokens") or usage.get("cache_read_input_tokens") or 0)
+
+
 def compute_cost(usage: dict[str, Any] | None, cost_entry: dict | None) -> tuple[float, str]:
-    """Return (total_usd, source) for one call's usage block."""
+    """Return (total_usd, source) for one call's usage block.
+
+    Cached prompt tokens (context caching / prompt caching) bill at
+    ``cached_input_cost_per_1M`` when the table provides it; they are a subset
+    of prompt_tokens, so the uncached remainder bills at the normal input rate.
+    """
     usage = usage or {}
     provider = usage.get("cost")
     if provider is not None:
         return float(provider), "provider"
     if cost_entry:
         in_tok, out_tok = _tokens(usage)
+        cached = min(_cached_tokens(usage), in_tok)
+        cached_rate = cost_entry.get("cached_input_cost_per_1M")
+        if not cached or cached_rate is None:
+            cached, cached_rate = 0, 0.0
         cost = (
-            cost_entry.get("input_cost_per_1M", 0.0) * in_tok / 1e6
+            cost_entry.get("input_cost_per_1M", 0.0) * (in_tok - cached) / 1e6
+            + cached_rate * cached / 1e6
             + cost_entry.get("output_cost_per_1M", 0.0) * out_tok / 1e6
         )
         return float(cost), "table"
@@ -182,11 +197,14 @@ def call_with_retries(
     max_retries: int = 5,
     parse_fn: Callable[[str], Any] | None = parse_first_json,
     response_format: dict[str, Any] | None = None,
+    cached_content: str | None = None,
 ) -> tuple[CallResult, AdapterResult | None]:
     """Call an adapter with retries, accumulating cost into a CallResult.
 
     ``parse_fn`` turns raw text into structured output; success = non-None parse.
     Pass ``parse_fn=None`` to accept raw text.
+    ``cached_content`` names a provider-side context cache holding the media
+    prefix (adapters that support one, e.g. vertex_native.create_cache).
     Returns (CallResult, last AdapterResult).
     """
     result = CallResult.blank()
@@ -198,6 +216,7 @@ def call_with_retries(
                 media=media,
                 request_metadata=request_metadata,
                 response_format=response_format,
+                **({"cached_content": cached_content} if cached_content else {}),
             )
             last = ar
             cost, source = compute_cost(ar.usage, cost_entry)

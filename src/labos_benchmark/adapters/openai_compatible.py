@@ -80,6 +80,12 @@ class OpenAICompatibleAdapter(BaseVLMAdapter):
             if item.get("label"):
                 content.append({"type": "text", "text": str(item["label"])})
             content.append(self._media_block(item))
+        if content and self.model_config.get("anthropic_cache_control"):
+            # Anthropic prompt caching (passed through by OpenRouter): a
+            # breakpoint on the last media block caches the whole media prefix,
+            # so back-to-back calls for the same clip (collect_suite) re-bill
+            # it at the cached-read rate while the trailing task prompt varies.
+            content[-1]["cache_control"] = {"type": "ephemeral"}
         content.append({"type": "text", "text": prompt})
         messages: list[dict[str, Any]] = []
         system_prompt = self.model_config.get("system_prompt")
