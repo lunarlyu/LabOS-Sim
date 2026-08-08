@@ -168,6 +168,71 @@ Scaling rules of thumb:
 | 10-model roster, 254 clips, reduced budget (b) | $2.2–3.5k |
 | per extra frontier model (80 clips, b) | ~$110 |
 
+### Prompt-caching lever (unverified, potentially ~2x on Gemini)
+
+The 3 prompts re-send an identical media prefix (~99% of input tokens); the
+per-task scripts run one full dataset pass per prompt, so the prefix always
+misses the provider's implicit cache. `scripts/data_collection/run_vlm_suite.py`
+instead sends each clip's prompts back-to-back (`runner.collect_suite`), which
+on a provider-pinned route (`gemini_3_1_pro_or`) should let prompts 2–3 bill
+the prefix at Gemini's cached rate: total input ≈ (1 + 2×0.25)/3 ≈ **0.5×**
+if the discount is ~75%. Verify with `scripts/probe_prompt_cache.py` (1 clip
+× 3 calls) before relying on it; unknowns are OpenRouter pass-through for
+image-heavy prompts and whether per-task `response_format` breaks the prefix.
+
+Probe results (2026-08-08, synthetic 128×3-frame payloads ≈ 419k prompt
+tokens/call, `scripts/probe_prompt_cache.py --synthetic-frames`):
+
+- **Arena**: no caching — a byte-identical repeat re-billed in full
+  ($1.69/call).
+- **Vertex, OpenAI-compatible endpoint** (ADC user creds, works via the
+  existing adapter as `gemini_3_1_pro_vertex`): usage block carries no
+  `prompt_tokens_details`, so cache hits are invisible; treat as uncached.
+- **Vertex, native `generateContent`**: implicit caching fires ONLY on
+  byte-identical payloads (417k/419k tokens cached, deterministic across
+  repeated trials); a different trailing prompt got 0 cached even after the
+  prefix had been sent five times. So the 3-prompt suite gains nothing from
+  implicit caching — though retries of a failed call become ~free.
+- **Vertex, explicit context caching**: WORKS across prompts — one
+  `cachedContents` holding the media prefix (TTL 300s), then P1/P2/P3 each
+  reported `cachedContentTokenCount` = 418,246 (99.9% of prompt).
+
+Economics per clip, list-price math at the long-context tier (~$4/M effective
+for >200k-token prompts — which also plausibly explains the "1.9×" factor in
+§4: it matches the 2× long-context multiplier): no cache 3 × $1.68 ≈ $5.04;
+explicit cache $1.68 (create) + 3 × ~$0.42 (cached ≈ 25%) + ~$0.15 storage
+≈ **$3.1 → ~0.6×**, i.e. 500-clip 3-prompt Gemini suite ~$2.6k → ~$1.5k.
+Creation-cost and cached-rate assumptions are list-price reads, pending a
+billing-dashboard check.
+
+**Implemented 2026-08-08** (live-tested end-to-end, 99% of prompt tokens
+cached with structured output):
+
+- `vertex_native` adapter (`src/labos_benchmark/adapters/vertex_native.py`):
+  native `generateContent` + `cachedContents`, ADC auth with automatic token
+  refresh, cached-token usage reporting; priced via `config/model_costs.json`
+  (`cached_input_cost_per_1M`).
+- `collect_suite` creates one context cache per clip when the model config
+  sets `context_cache: {enabled: true}` (see `gemini_3_1_pro_vertex_native`),
+  runs every prompt against it, deletes it after; falls back to full media on
+  any cache failure.
+- Other routes: `anthropic_cache_control: true` on an OpenAI-compatible model
+  entry adds an Anthropic-style prompt-caching breakpoint after the media
+  prefix (reads ~0.1×, writes 1.25× — pays off with ≥2 prompts/clip). Enabled
+  for claude-opus-4.8 (matters under budget option (b)) and qwen3.8-max
+  (Alibaba uses the same syntax through OpenRouter). Automatic prefix caching
+  — no flag, clip-grouped order is the enabler — covers gpt-5.5 (reads
+  0.25–0.5×), grok-4.5 and kimi-k3 (writes free, reads 0.25×). Per OpenRouter
+  docs 2026-08; each route should get the 3-call probe before a big run —
+  the Gemini implicit-caching lesson (identical-payload-only) shows documented
+  ≠ actual. Roster-wide at 0.5× input, the 10-model 500-clip full-design
+  suite drops roughly $16–25k → $8–13k.
+
+Usage: `scripts/data_collection/run_vlm_suite.py --models
+gemini_3_1_pro_vertex_native ...`. Combining with budget option (b)'s
+32-frame diet drops prompts under 200k tokens back to the standard tier — a
+multiplicative win.
+
 ## 5. Recommended sequence
 
 1. Finish prompt-ablation v2 (in progress) → lock P1/P2 wording.
@@ -182,7 +247,12 @@ Scaling rules of thumb:
 
 - Arena vision support for kimi/glm/deepseek is unprobed (1-pixel test per
   model before adding to roster).
-- Arena billing is not returned per call; if exact spend tracking matters,
-  run OR for the roster suite and reserve Arena for screens/dev runs.
+- ~~Arena billing is not returned per call~~ resolved 2026-08-08: Arena DOES
+  return `usage.cost` (+ `cost_details.upstream_inference_*`), so client.py
+  cost accounting works there (source "provider"). Measured effective input
+  price for gemini-3.1-pro-preview: **~$4.0/M — 2× the OpenRouter list price**
+  (per-call cost ≈ OpenRouter's measured cost incl. its ~1.9× image-billing
+  factor, so the routes land within pennies of each other per call). Arena
+  showed no prompt-cache hits (see §4), so the caching lever is OR/direct-only.
 - ~~`gpt-5.5` (non-pro) context window unverified~~ resolved: 1M on
   OpenRouter (roster details table) — full design fits.

@@ -13,6 +13,84 @@ models:
     api_key_env: GOOGLE_API_KEY
     temperature: 0
 
+  # OpenRouter route for the Gemini anchor, pinned to a single Google backend so
+  # back-to-back calls sharing the media prefix (collect_suite / run_vlm_suite.py)
+  # can hit Gemini implicit prompt caching — routing between backends per call
+  # would miss the cache. usage.include makes OpenRouter return exact cost and
+  # cached-token details per call. Verify with scripts/probe_prompt_cache.py;
+  # if google-ai-studio is unavailable for this model, try google-vertex.
+  gemini_3_1_pro_or:
+    adapter: openai_compatible
+    role: vlm
+    provider_model_id: google/gemini-3.1-pro-preview
+    base_url_env: OPENROUTER_BASE_URL
+    api_key_env: OPENROUTER_API_KEY
+    media_transport: data_uri
+    temperature: 0
+    extra_body:
+      usage:
+        include: true
+      provider:
+        only: [google-ai-studio]
+        allow_fallbacks: false
+
+  # Vertex AI route (OpenAI-compatible endpoint), verified working 2026-08-08
+  # with user ADC credentials (`gcloud auth application-default login`):
+  #   export VERTEX_ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
+  # NOTE: not `gcloud auth print-access-token` — that mints a token for the
+  # VM's compute service account, which lacks aiplatform.endpoints.predict.
+  # Tokens expire after ~1h; for long runs re-export and rerun the same
+  # command — collect_suite resumes from predictions.jsonl. No usage.cost in
+  # responses (token-table pricing), and no prompt_tokens_details — cache hits
+  # are invisible on this endpoint. Probed 2026-08-08: implicit caching only
+  # fires on byte-identical payloads; cross-prompt savings need explicit
+  # context caching via the NATIVE generateContent API (not this endpoint) —
+  # see docs/MODEL_ROSTER_AND_BUDGET.md §4. Batch (50% off) also lives here.
+  # base URL template (fill in your GCP project):
+  #   export VERTEX_OPENAI_BASE_URL=https://aiplatform.googleapis.com/v1/projects/<gcp-project>/locations/global/endpoints/openapi
+  gemini_3_1_pro_vertex:
+    adapter: openai_compatible
+    role: vlm
+    provider_model_id: google/gemini-3.1-pro-preview
+    base_url_env: VERTEX_OPENAI_BASE_URL
+    api_key_env: VERTEX_ACCESS_TOKEN
+    media_transport: data_uri
+    temperature: 0
+
+  # Native Vertex route with explicit context caching — the verified ~40% cut
+  # for multi-prompt suites (docs/MODEL_ROSTER_AND_BUDGET.md §4). Auth is ADC:
+  # `gcloud auth application-default login` once; the adapter mints and
+  # refreshes tokens itself, so multi-hour runs survive token expiry (do NOT
+  # set VERTEX_ACCESS_TOKEN unless you want a fixed token, e.g. in CI).
+  # With context_cache.enabled, collect_suite uploads each clip's media once
+  # as a cachedContents (TTL below) and runs every prompt against it. No cost
+  # field in responses; pricing comes from config/model_costs.json.
+  # GCP project comes from the GOOGLE_CLOUD_PROJECT env var (or add a
+  # `project:` key here); `gcloud config get-value project` shows yours.
+  gemini_3_1_pro_vertex_native:
+    adapter: vertex_native
+    role: vlm
+    provider_model_id: gemini-3.1-pro-preview
+    location: global
+    temperature: 0
+    context_cache:
+      enabled: true
+      ttl_s: 900   # safety window for 3 calls + retries; deleted eagerly after each clip
+
+  # Arena route for the Gemini anchor (design_choices runner conventions:
+  # ARENA_API_KEY falls back to ANTHROPIC_AUTH_TOKEN). Arena does not report
+  # per-call cost; useful for dev screens and cache probes when only the Arena
+  # token is available. Whether it reports cached tokens is exactly what
+  # scripts/probe_prompt_cache.py checks.
+  gemini_3_1_pro_arena:
+    adapter: openai_compatible
+    role: vlm
+    provider_model_id: gemini-3.1-pro-preview
+    base_url: https://api.preview.arena.ai/v1
+    api_key_env: ARENA_API_KEY
+    media_transport: data_uri
+    temperature: 0
+
   gpt_5_5:
     adapter: openai_compatible
     role: vlm
@@ -30,11 +108,52 @@ models:
     api_key_env: OPENROUTER_API_KEY
     media_transport: data_uri
     temperature: 0
+    # Anthropic prompt caching via OpenRouter: cache the media prefix so the
+    # clip-grouped suite (run_vlm_suite.py) re-reads it at ~0.1x. Writes cost
+    # 1.25x, so the runner honors this flag only for multi-task suite runs —
+    # single-task runs (per-task scripts) automatically drop it.
+    anthropic_cache_control: true
 
   qwen3_vl:
     adapter: openai_compatible
     role: vlm
     provider_model_id: qwen/qwen3-vl-8b-instruct
+    base_url_env: OPENROUTER_BASE_URL
+    api_key_env: OPENROUTER_API_KEY
+    media_transport: data_uri
+    temperature: 0
+    # floor model, third-party hosted: no prompt caching available — leave unflagged
+
+  # Grok: xAI prompt caching is AUTOMATIC through OpenRouter (writes free,
+  # reads 0.25x) — no flag needed; the clip-grouped suite order is the enabler.
+  # Verify cross-prompt hits with scripts/probe_prompt_cache.py before a big run.
+  grok_4_5:
+    adapter: openai_compatible
+    role: vlm
+    provider_model_id: x-ai/grok-4.5
+    base_url_env: OPENROUTER_BASE_URL
+    api_key_env: OPENROUTER_API_KEY
+    media_transport: data_uri
+    temperature: 0
+
+  # Alibaba Qwen uses Anthropic-STYLE cache_control through OpenRouter
+  # (writes 1.25x, reads 0.1x, 5-min TTL; supported on qwen3-max-class models),
+  # so it reuses the same flag as Claude.
+  qwen3_8_max:
+    adapter: openai_compatible
+    role: vlm
+    provider_model_id: qwen/qwen3.8-max
+    base_url_env: OPENROUTER_BASE_URL
+    api_key_env: OPENROUTER_API_KEY
+    media_transport: data_uri
+    temperature: 0
+    anthropic_cache_control: true
+
+  # Moonshot: automatic caching through OpenRouter (writes free, reads 0.25x).
+  kimi_k3:
+    adapter: openai_compatible
+    role: vlm
+    provider_model_id: moonshotai/kimi-k3
     base_url_env: OPENROUTER_BASE_URL
     api_key_env: OPENROUTER_API_KEY
     media_transport: data_uri

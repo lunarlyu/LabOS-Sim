@@ -142,6 +142,35 @@ def _completed_sample_ids(run_dir: Path) -> set[str]:
 # --------------------------------------------------------------------------- #
 # VLM collection (p1 / p2 / p3)
 # --------------------------------------------------------------------------- #
+def prepare_clip_media(dp, *, media_cfg: dict, cams: list[str], max_videos: int,
+                       runs_root: str | Path, data_root: str | Path) -> list[dict[str, Any]]:
+    """Resolve one clip's camera videos and preprocess them into media blocks.
+
+    Preprocessing is content-addressed (runs/.media_cache/), so repeated calls
+    for the same clip return byte-identical files in the same (camera) order —
+    a requirement for provider-side prefix caching.
+    """
+    from .media import maybe_transcode_videos
+
+    videos = dp.resolve_videos(data_root, cams or None)
+    if max_videos > 0:
+        videos = videos[:max_videos]
+    videos = maybe_transcode_videos(videos, Path(runs_root) / ".media_cache", media_cfg)
+    media_type = (
+        "image"
+        if media_cfg.get("input_type") in {"image_contact_sheet", "image_frames"}
+        else "video"
+    )
+    return [
+        {
+            "type": media_type,
+            "path": str(v["path"]),
+            **({"label": v["label"]} if v.get("label") else {}),
+        }
+        for v in videos
+    ]
+
+
 def collect(
     task: str,
     model_name: str,
@@ -162,83 +191,166 @@ def collect(
     Clips come from ``data_list`` (a run_list.jsonl) and are processed with a
     thread pool of size ``concurrency``.
     """
-    from .dataset import load_datapoints
-    from .media import maybe_transcode_videos
+    return collect_suite([task], model_name, config, run_id=run_id, data_list=data_list,
+                         camera_views=camera_views, limit=limit, concurrency=concurrency,
+                         runs_root=runs_root, data_root=data_root)[task]
 
-    ptype = _prompts.prompt_type_of(task)
-    if _prompts.is_parser(ptype):
-        raise ValueError(f"Use run_parser() for parser task {task!r}.")
+
+def collect_suite(
+    tasks: list[str],
+    model_name: str,
+    config: dict,
+    *,
+    run_id: str,
+    data_list: str | Path,
+    camera_views: list[str] | None = None,
+    limit: int | None = None,
+    concurrency: int = 1,
+    runs_root: str | Path = "runs",
+    data_root: str | Path = "data",
+) -> dict[str, Path]:
+    """Collect several VLM tasks clip-grouped: each clip's tasks run back-to-back.
+
+    Produces the same per-task run dirs, records and resume behavior as calling
+    collect() once per task, but instead of one full dataset pass per task, all
+    tasks for a clip are sent within seconds of each other so the shared media
+    prefix can bill at a cached rate. Two mechanisms (probed 2026-08-08, see
+    docs/MODEL_ROSTER_AND_BUDGET.md §4):
+
+    * Explicit context caching — when the model config has
+      ``context_cache: {enabled: true}`` and the adapter implements
+      ``create_cache`` (vertex_native): the media prefix is uploaded once per
+      clip as a provider-side cache and each task call references it instead of
+      re-sending media. Guaranteed discount; falls back to full media if cache
+      creation or a cached call fails.
+    * Provider-side prompt caching — on OpenAI-compatible routes the identical
+      request prefix lets automatic prefix caching (OpenAI) or ``cache_control``
+      markers (Anthropic; see OpenAICompatibleAdapter) hit. Best-effort; verify
+      a route with scripts/probe_prompt_cache.py.
+
+    Tasks for one clip run sequentially inside one worker — a provider caches a
+    prefix only after the first call finishes — while the thread pool
+    parallelizes across clips.
+    """
+    from .dataset import load_datapoints
+
+    if not tasks:
+        raise ValueError("collect_suite needs at least one task")
+    for task in tasks:
+        if _prompts.is_parser(_prompts.prompt_type_of(task)):
+            raise ValueError(f"Use run_parser() for parser task {task!r}.")
 
     defaults = config["defaults"]
     media_cfg = defaults.get("media", {})
     call_cfg = defaults.get("call", {})
     model_cfg = _model_cfg_with_call_defaults(config["models"][model_name], call_cfg)
+    if len(tasks) < 2 and model_cfg.get("anthropic_cache_control"):
+        # a cache-write surcharge with no follow-up reads is pure loss, so
+        # single-task runs (incl. the per-task scripts via collect()) go unflagged
+        model_cfg.pop("anthropic_cache_control")
     adapter = get_adapter(model_cfg["adapter"], model_cfg)
     cost_entry = config["model_costs"].get(model_cfg.get("provider_model_id"))
     cams = camera_views if camera_views is not None else media_cfg.get("camera_views", [])
     max_videos = int(media_cfg.get("max_videos_per_sample", 0) or 0)
-    schema_request = _schema_request_for_task(task)
-
-    prompt_text = _prompts.load_prompt(task)  # protocol is baked into the .md
-    parse_fn = _client.parse_first_json       # JSON for all tasks (p2 is still JSON-shaped)
+    parse_fn = _client.parse_first_json  # JSON for all tasks (p2 is still JSON-shaped)
 
     points = load_datapoints(data_list)
     if limit:
         points = points[:limit]
 
-    run_dir = _new_run_dir(run_id, task, model_name, runs_root=runs_root)
-    atomic_write_json(run_dir / "run_config.json",
-                      {"run_id": run_id, "task": task, "model": model_name, "model_cfg": model_cfg,
-                       "data_list": str(data_list), "data_root": str(data_root),
-                       "camera_views": cams, "max_videos_per_sample": max_videos,
-                       "concurrency": concurrency, "schema_request": schema_request,
-                       "defaults": defaults})
+    prompt_texts: dict[str, str] = {}   # protocol is baked into each task's .md
+    schema_requests: dict[str, dict] = {}
+    run_dirs: dict[str, Path] = {}
+    completed: dict[str, set[str]] = {}
+    for task in tasks:
+        prompt_texts[task] = _prompts.load_prompt(task)
+        schema_requests[task] = _schema_request_for_task(task)
+        run_dir = _new_run_dir(run_id, task, model_name, runs_root=runs_root)
+        run_config = {"run_id": run_id, "task": task, "model": model_name, "model_cfg": model_cfg,
+                      "data_list": str(data_list), "data_root": str(data_root),
+                      "camera_views": cams, "max_videos_per_sample": max_videos,
+                      "concurrency": concurrency, "schema_request": schema_requests[task],
+                      "defaults": defaults}
+        if len(tasks) > 1:
+            run_config["suite_tasks"] = list(tasks)
+        atomic_write_json(run_dir / "run_config.json", run_config)
+        run_dirs[task] = run_dir
+        completed[task] = _completed_sample_ids(run_dir)
 
     write_lock = threading.Lock()
-    completed = _completed_sample_ids(run_dir)
-    pending = [dp for dp in points if dp.sample_id not in completed]
-    newly_succeeded: set[str] = set()
+    newly_succeeded: dict[str, set[str]] = {task: set() for task in tasks}
+    pending = [dp for dp in points
+               if any(dp.sample_id not in completed[task] for task in tasks)]
 
-    def _process(dp) -> None:
-        videos = dp.resolve_videos(data_root, cams or None)
-        if max_videos > 0:
-            videos = videos[:max_videos]
-        videos = maybe_transcode_videos(videos, Path(runs_root) / ".media_cache", media_cfg)
-        media_type = (
-            "image"
-            if media_cfg.get("input_type") in {"image_contact_sheet", "image_frames"}
-            else "video"
-        )
-        media = [
-            {
-                "type": media_type,
-                "path": str(v["path"]),
-                **({"label": v["label"]} if v.get("label") else {}),
-            }
-            for v in videos
-        ]
-        result, ar = _client.call_with_retries(
-            adapter, prompt=prompt_text, media=media,
+    cache_cfg = model_cfg.get("context_cache") or {}
+    use_context_cache = bool(cache_cfg.get("enabled")) and hasattr(adapter, "create_cache")
+    cache_ttl_s = int(cache_cfg.get("ttl_s", 900))
+
+    def _call(task: str, dp, media: list[dict], cache_name: str | None):
+        return _client.call_with_retries(
+            adapter, prompt=prompt_texts[task], media=media,
             request_metadata={"task": task, "model": model_name,
                               "sample_id": dp.sample_id, "index": dp.index},
             model_name=model_name, cost_entry=cost_entry,
             max_retries=int(call_cfg.get("max_retries", 5)), parse_fn=parse_fn,
-            response_format=schema_request["response_format"],
+            response_format=schema_requests[task]["response_format"],
+            cached_content=cache_name,
         )
-        with write_lock:
-            _write_record(run_dir, run_id, task, model_name, dp.sample_id, result, ar,
-                          expected=dp.expected)
-            if result.success and result.output is not None:
-                newly_succeeded.add(dp.sample_id)
+
+    def _process(dp) -> None:
+        media = prepare_clip_media(dp, media_cfg=media_cfg, cams=cams, max_videos=max_videos,
+                                   runs_root=runs_root, data_root=data_root)
+        tasks_todo = [task for task in tasks if dp.sample_id not in completed[task]]
+        cache_name = None
+        cache_usage = None  # cachedContents write bills at the full input rate
+        if use_context_cache and media and len(tasks_todo) > 1:
+            try:
+                cache_name, cache_usage = adapter.create_cache(media, ttl_s=cache_ttl_s)
+            except Exception as exc:  # noqa: BLE001 — cache is an optimization, not a dependency
+                print(f"[WARNING] context cache creation failed for {dp.sample_id}: {exc}; "
+                      "sending full media per call", flush=True)
+        created_cache = cache_name
+        try:
+            for task in tasks_todo:
+                result, ar = _call(task, dp, [] if cache_name else media, cache_name)
+                if cache_name and not result.success and not any(result.raw_outputs_per_try):
+                    # No model text ever came back -> transport-level failure,
+                    # most likely an expired/invalid cache reference. Drop the
+                    # cache for the rest of this clip and retry uncached. (A
+                    # parse failure keeps the cache: text arrived, so the cache
+                    # reference is fine and re-sending media cannot help.)
+                    print(f"[WARNING] cached call failed for {dp.sample_id}/{task}; "
+                          "dropping the cache and retrying with full media", flush=True)
+                    cache_name = None
+                    result, ar = _call(task, dp, media, None)
+                if cache_usage is not None:
+                    # ledger the cache write against the clip's first recorded
+                    # call so run cost totals reflect actual spend
+                    write_cost, _ = _client.compute_cost(cache_usage, cost_entry)
+                    result.input_tokens += int(cache_usage.get("prompt_tokens", 0) or 0)
+                    result.cost += write_cost
+                    if result.cost_source == "none" and write_cost:
+                        result.cost_source = "table"
+                    cache_usage = None
+                with write_lock:
+                    _write_record(run_dirs[task], run_id, task, model_name, dp.sample_id,
+                                  result, ar, expected=dp.expected)
+                    if result.success and result.output is not None:
+                        newly_succeeded[task].add(dp.sample_id)
+        finally:
+            if created_cache:
+                adapter.delete_cache(created_cache)
 
     _run_pool(_process, pending, concurrency)
-    n_success = len(completed | newly_succeeded)
-    if n_success == len(points):
-        print(f"[done] {run_id} / {task} / {model_name}: {n_success}/{len(points)} clips -> {run_dir}")
-    else:
-        print(f"[incomplete] {run_id} / {task} / {model_name}: "
-              f"{n_success}/{len(points)} clips succeeded; rerun the same command to retry failures -> {run_dir}")
-    return run_dir
+    for task in tasks:
+        n_success = len(completed[task] | newly_succeeded[task])
+        if n_success == len(points):
+            print(f"[done] {run_id} / {task} / {model_name}: "
+                  f"{n_success}/{len(points)} clips -> {run_dirs[task]}")
+        else:
+            print(f"[incomplete] {run_id} / {task} / {model_name}: "
+                  f"{n_success}/{len(points)} clips succeeded; rerun the same command to retry failures -> {run_dirs[task]}")
+    return run_dirs
 
 
 # --------------------------------------------------------------------------- #

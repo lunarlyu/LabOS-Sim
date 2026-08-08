@@ -18,6 +18,10 @@ def get_adapter(adapter_name: str, model_config: dict[str, Any]) -> BaseVLMAdapt
         from .cosmos_reason import CosmosReasonAdapter
 
         return CosmosReasonAdapter(model_config)
+    if adapter_name == "vertex_native":
+        from .vertex_native import VertexNativeAdapter
+
+        return VertexNativeAdapter(model_config)
     raise ValueError(f"Unknown adapter: {adapter_name}")
 
 
