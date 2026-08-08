@@ -104,7 +104,20 @@ def build_run_list(output: Path) -> int:
     return len(selected)
 
 
-def config_for(base: dict, condition: dict) -> dict:
+PROVIDERS = {
+    # Historical/default: Luna's OpenRouter key; provider-reported billing.
+    "openrouter": {"base_url_env": "OPENROUTER_BASE_URL",
+                   "api_key_env": "OPENROUTER_API_KEY",
+                   "provider_model_id": "google/gemini-3.1-pro-preview"},
+    # Carrie's Arena key (OpenAI-compatible). Arena returns no usage.cost, so
+    # config_for injects table pricing for cost recording.
+    "arena": {"base_url": "https://api.preview.arena.ai/v1",
+              "api_key_env": "ARENA_API_KEY",
+              "provider_model_id": "gemini-3.1-pro-preview"},
+}
+
+
+def config_for(base: dict, condition: dict, provider_name: str = "openrouter") -> dict:
     cfg = copy.deepcopy(base)
     defaults = cfg.setdefault("defaults", {})
     call = defaults.setdefault("call", {})
@@ -124,16 +137,22 @@ def config_for(base: dict, condition: dict) -> dict:
     # registry. Historical design runs used Gemini through OpenRouter; keeping
     # these fields local prevents unrelated registry edits from changing the
     # provider midway through a resumable run.
+    provider = PROVIDERS[provider_name]
     cfg["models"][MODEL].update({
         "adapter": "gemini",
-        "provider_model_id": "google/gemini-3.1-pro-preview",
+        "provider_model_id": provider["provider_model_id"],
         "api_style": "openai_compatible",
-        "base_url_env": "OPENROUTER_BASE_URL",
-        "api_key_env": "OPENROUTER_API_KEY",
         "media_transport": "data_uri",
         "temperature": 0,
         "max_completion_tokens": condition["tokens"],
+        **({"base_url": provider["base_url"]} if "base_url" in provider
+           else {"base_url_env": provider["base_url_env"]}),
+        "api_key_env": provider["api_key_env"],
     })
+    if provider_name == "arena":
+        cfg.setdefault("model_costs", {}).setdefault(
+            "gemini-3.1-pro-preview",
+            {"input_cost_per_1M": 2.0, "output_cost_per_1M": 12.0})
     return cfg
 
 
@@ -173,6 +192,8 @@ def main() -> None:
     ap.add_argument("--limit", type=int, default=None,
                     help="run only the first N selected samples (for validation)")
     ap.add_argument("--run-prefix", default=None)
+    ap.add_argument("--provider", choices=sorted(PROVIDERS), default="openrouter",
+                    help="API route/billing for the VLM (parser stays on OpenRouter)")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
     if args.limit is not None and not 1 <= args.limit <= EXPECTED_SAMPLES:
@@ -194,6 +215,12 @@ def main() -> None:
     if args.dry_run:
         return
 
+    import os
+    if args.provider == "arena" and not os.environ.get("ARENA_API_KEY"):
+        token = os.environ.get("ANTHROPIC_AUTH_TOKEN")
+        if not token:
+            raise SystemExit("arena provider needs ARENA_API_KEY or ANTHROPIC_AUTH_TOKEN")
+        os.environ["ARENA_API_KEY"] = token
     count = build_run_list(run_list)
     if count != EXPECTED_SAMPLES:
         raise SystemExit(f"expected {EXPECTED_SAMPLES} selected cases, found {count}")
@@ -204,7 +231,7 @@ def main() -> None:
     for name in names:
         run_id = f"{stamp}_{name}"
         condition = CONDITIONS[name]
-        cfg = config_for(base, condition)
+        cfg = config_for(base, condition, args.provider)
         run_dirs = {}
         for task in TASKS:
             run_dirs[task] = runner.collect(
