@@ -52,6 +52,19 @@ CONDITIONS = {
     # views hold accuracy, every future run (incl. the multi-model roster)
     # gets proportionally cheaper. Compare against the committed 3-view
     # baseline run. Not part of the original staged comparisons.
+    # Frame-budget bridge (downward): literature norms are ~1-4 fps (Video-MME,
+    # Gemini native sampling, LLaVA-Video's 64-frame cap), so 128/view on 4-21s
+    # clips is far above convention. If 32/view holds accuracy, every future
+    # run costs ~1/4 and Claude's ~100-image cap fits 3 views (96 images).
+    # Risk to watch per-subtype: vortex_off / tube_drop (motion & brief events).
+    "frames_64": {
+        "frame_count": 64,
+        "views": ["front", "left", "right"], "tokens": 2048, "resolution": 720,
+    },
+    "frames_32": {
+        "frame_count": 32,
+        "views": ["front", "left", "right"], "tokens": 2048, "resolution": 720,
+    },
     "views_front_left": {
         "frame_count": 128,
         "views": ["front", "left"], "tokens": 2048, "resolution": 720,
