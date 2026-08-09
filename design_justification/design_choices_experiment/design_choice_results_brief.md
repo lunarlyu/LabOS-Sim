@@ -191,6 +191,39 @@ settles wrong_rack. If it replicates 0.6, keep 128f for scored runs (or
 accept a documented wrong_rack penalty at 32f); if it lands ~0.2–0.4, adopt
 32f and bank the ~7x saving.
 
+## 7. Baseline replicate: the noise floor, measured (added 2026-08-09)
+
+The §6 tiebreaker: the exact baseline condition (128f, 3 views, committed
+prompts, same 80 clips) re-run once via the Arena route ($418.91).
+
+| Run of the IDENTICAL condition | P1 acc / balanced | P2 exact | P3/P5 exact |
+|---|---:|---:|---:|
+| Luna's baseline (OpenRouter, Jul 19) | 0.275 / 0.500 | 0.300 | 0.188 |
+| Replicate (Arena, Aug 9) | 0.338 / 0.579 | 0.188 | 0.175 |
+| **Replicate spread** | **±0.06 / ±0.08** | **±0.11** | ±0.01 |
+
+Per-subtype P2 recall between the two identical runs: wrong_rack 6/10 vs
+2/10, tube_drop 2/10 vs 0/10, success 5/10 vs 3/10.
+
+**Conclusions.**
+1. **Adopt 32 frames/view.** The 32f condition (P1 0.363/0.550, P2 0.237,
+   P3/P5 0.200) falls between or above the two baseline replicates on every
+   headline metric. There is no evidence of degradation at any level, and at
+   ~7x lower cost (§6 pricing cliff) it is strictly dominant. Recommended
+   revision to `selected_design`: `frames_per_view: 32` (confirm with both
+   authors before editing the matrix).
+2. **The §5 and §6 subtype alarms are retired.** wrong_rack's apparent
+   dose-response (0.6 -> 0.1 under view or frame cuts) is not distinguishable
+   from replicate noise (0.6 vs 0.2 on identical inputs). §5's "keep 3 views"
+   now rests on physical plausibility and the low marginal cost of side views
+   at 32f (96 images total), not on measured degradation.
+3. **Methodological: single-run condition comparisons are not interpretable
+   below ~0.1 on P2 exact accuracy.** This replicate turns the
+   temperature-0 non-determinism note below from an anecdote into a measured
+   floor. Design decisions from here should require either replication,
+   larger per-subtype n, or pooling through the hierarchical M2 fit — a
+   single 80-clip run cannot resolve effects smaller than the floor.
+
 ## Additional note: temperature 0 is not deterministic
 
 For the 30 long clips, fixed and adaptive 256 generated **23,040/23,040
